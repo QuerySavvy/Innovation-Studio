@@ -47,7 +47,7 @@ my_list = my_string.split(",")
 country = my_list[-1]
 postcode = my_list[-2]
 
-if exists(mylist[-3]):
+if exist mylist[-3]:
     other1 = my_list[-3]
 if exists(my_list[-4]):
     other2 = my_list[-4]
