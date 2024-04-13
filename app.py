@@ -46,12 +46,19 @@ my_list = my_string.split(",")
 
 country = my_list[-1]
 postcode = my_list[-2]
-other1 = my_list[-3]
-other2 = my_list[-4]
-other3 = my_list[-5]
-other4 = my_list[-6]
-other5 = my_list[-7]
-other6 = my_list[-8]
+if len(mylist) >= 3:
+    other1 = mylist[-3]
+if len(mylist) >= 4:
+    other2 = mylist[-4]
+if len(mylist) >= 5:
+    other3 = mylist[-5]
+if len(mylist) >= 6:
+    other4 = mylist[-6]
+if len(mylist) >= 7:
+    other5 = mylist[-7]
+if len(mylist) >= 8:
+    other6 = mylist[-8]
+
 
 # Displaying address components
 st.write(f"**Country:** {country}")
