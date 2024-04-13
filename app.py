@@ -21,7 +21,7 @@ g = geocoder.ip('me')
 location = g.latlng
 
 # Displaying user's location
-st.write(location)
+#st.write(location)
 
 # Extracting latitude and longitude
 lat = location[0]
@@ -85,8 +85,10 @@ except IndexError:
 st.write(f"**Country:** {country}")
 st.write(f"**Postcode:** {postcode}")
 st.write(f"**Other1:** {other1}")
-st.write(f"**State ?:** {other2}")
+st.write(f"**Other2:** {other2}")
 st.write(f"**Other3:** {other3}")
-st.write(f"**Town ?:** {other4}")
+st.write(f"**Other4:** {other4}")
 st.write(f"**Other5:** {other5}")
 st.write(f"**Other6:** {other6}")
+
+
