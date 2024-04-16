@@ -41,6 +41,7 @@ setuptools
 six
 smmap
 streamlit
+streamlit_folium
 tenacity
 toml
 toolz
