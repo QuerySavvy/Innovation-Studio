@@ -8,6 +8,7 @@ click
 colorama
 decorator
 future
+folium
 geocoder
 geographiclib
 geopy
