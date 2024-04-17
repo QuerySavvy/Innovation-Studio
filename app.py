@@ -34,8 +34,8 @@ if selected_suburb is None:
 latitude = data.loc[data['locality'] == selected_suburb, "Lat_precise"].values[0]
 longitude = data.loc[data['locality'] == selected_suburb, "Long_precise"].values[0]
 
-selected_street = st.text_input("Street Name", label="Enter Street Name")
-selected_number = st.text_input("Street Number", label="Enter Street Number")
+selected_street = st.text_input("Street Name")
+selected_number = st.text_input("Street Number")
 
 # Get location info using geopy
 geolocator = Nominatim(user_agent="UTS_APP")
