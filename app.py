@@ -61,7 +61,7 @@ address = geo_location.address
 
 if not address[0].isdigit() and selected_number!= "":
     address = selected_number + ", " + address
-    st.write("TESTING FEATURE: not a digit")
+    st.warning('Unable to find exact location on map', icon="⚠️")
 
 st.write("Address:", address)
 st.write("Coordinates:", (geo_location.latitude, geo_location.longitude))
