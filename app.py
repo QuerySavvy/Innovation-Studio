@@ -34,29 +34,23 @@ if selected_suburb is None:
 latitude = data.loc[data['locality'] == selected_suburb, "Lat_precise"].values[0]
 longitude = data.loc[data['locality'] == selected_suburb, "Long_precise"].values[0]
 
-
-
 selected_street = st.text_input("Street Name")
 selected_number = st.text_input("Street Number")
-
 
 # Get location info using geopy
 geolocator = Nominatim(user_agent="UTS_APP")
 
 if selected_street is not None and selected_street != "":
-
     if selected_number is not None and selected_number != "":
         geo_location = geolocator.geocode(selected_number +" "+selected_street +" "+ selected_suburb+" "+"NSW, Australia")
         coordinates = (geo_location.latitude, geo_location.longitude)
         map = folium.Map(location=coordinates, zoom_start=17)
         folium.Marker([geo_location.latitude, geo_location.longitude]).add_to(map)
-
     else:
         geo_location = geolocator.geocode(selected_street +" "+ selected_suburb+" "+"NSW, Australia")
         coordinates = (geo_location.latitude, geo_location.longitude)
         map = folium.Map(location=coordinates, zoom_start=17)
         folium.Marker([geo_location.latitude, geo_location.longitude]).add_to(map)
-
 else:
     geo_location = geolocator.geocode(selected_suburb+" "+", NSW, Australia")
     coordinates = (geo_location.latitude, geo_location.longitude)
@@ -74,4 +68,3 @@ st.write("Coordinates:", (geo_location.latitude, geo_location.longitude))
 
 # Display map
 st_folium(map, height=400)
-
