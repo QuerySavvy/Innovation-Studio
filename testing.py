@@ -1,6 +1,6 @@
 import streamlit as st
 from inference_sdk import InferenceHTTPClient
-from PIL import Image
+from PIL import Image, ImageOps
 
 # initialize the client
 CLIENT = InferenceHTTPClient(
@@ -16,6 +16,7 @@ uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png
 if uploaded_file is not None:
     # Open the uploaded image
     image = Image.open(uploaded_file)
+    image = ImageOps.exif_transpose(image)
 
     # Infer on the uploaded image
     result = CLIENT.infer(image, model_id="rubpred/4")
