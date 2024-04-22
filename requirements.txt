@@ -15,6 +15,7 @@ geopy
 gitdb
 GitPython
 idna
+inference_sdk
 Jinja2
 jsonschema
 jsonschema-specifications
