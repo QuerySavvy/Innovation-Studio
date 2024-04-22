@@ -52,3 +52,4 @@ tzdata
 urllib3
 watchdog
 wheel
+libgl1-mesa-glx
