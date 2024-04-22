@@ -40,7 +40,7 @@ rpds-py
 setuptools
 six
 smmap
-streamlit
+streamlit==1.33.0
 streamlit_folium
 tenacity
 toml
