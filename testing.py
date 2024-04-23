@@ -91,7 +91,9 @@ suburbs = loadlocationdata()
 selected_suburb = st.selectbox("Suburb", suburbs, index=None, placeholder="Select a Suburb ...",)
 selected_street = st.text_input("Street Name")
 selected_number = st.text_input("Street Number")
-geolocate()
+
+if selected_suburb is not None and selected_suburb != "":
+    geolocate()
 
 # Button to trigger inference
 if st.button("Detect Rubbish"):
