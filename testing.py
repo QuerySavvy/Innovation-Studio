@@ -5,7 +5,7 @@ from PIL import Image, ImageOps
 # initialize the client
 CLIENT = InferenceHTTPClient(
     api_url="https://detect.roboflow.com",
-    api_key="uFsY2MHzUdNWrdNGsjcl"
+    api_key= my_api_key
 )
 
 st.title("Object Detection prototype")
