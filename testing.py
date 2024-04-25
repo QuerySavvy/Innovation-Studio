@@ -64,7 +64,7 @@ def geolocate():
 
 
 # --------------------------------     Streamlit app     --------------------------------
-st.title("Innovation Studio - Rubbish reporting app")
+st.title("Curbside rubbish reporting app")
 
 st.subheader("Please take a photo or upload an image")
 
