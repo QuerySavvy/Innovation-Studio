@@ -14,22 +14,14 @@ CLIENT = InferenceHTTPClient(
 
 # Function to perform inference on uploaded image
 def rubbish_detector(image_file):
-    with st.spinner('Performing image classification...'):
+    with st.spinner('Please wait for image classification . . . .'):
         # Perform inference
         result = CLIENT.infer(image_file, model_id="rubpred/4")
 
     # Extract the item and confidence
-    object = result["top"]
-    confidence = result["confidence"]
-
-    # Display the result
-    st.header("Detected objects:")
-    st.subheader("Summary result:")
-    st.write("Item Detected: ",object)
-    st.write("Confidence: ", confidence)
-
-    st.subheader("Full result:")
-    st.write(result)
+    detected_object = result["top"]
+    confidence = format(result["confidence"],".2%")
+    return detected_object, confidence
 
 @st.cache_data
 def loadlocationdata():
@@ -66,7 +58,7 @@ def geolocate():
         address = selected_number + ", " + address
         st.warning('Unable to find exact location on map', icon="⚠️")
     st.write("Address:", address)
-    #st.write("Coordinates:", (geo_location.latitude, geo_location.longitude))
+
     # Display map
     return st_folium(map, height=400)
 
@@ -75,27 +67,58 @@ def geolocate():
 st.title("The Desktop Prototype")
 st.header("Image Upload Section")
 
+# Define a SessionState object
+session_state = st.session_state
+
+if 'image uploaded' not in session_state:
+    session_state['image uploaded'] = 0
+
 # Allow user to upload an image
 uploaded_image = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
-
-# Perform inference if an image is uploaded
 if uploaded_image is not None:
     # Display the uploaded image
     image = Image.open(uploaded_image)
     st.image(image, width=250, caption="Uploaded Image")
+    session_state['image uploaded'] += 1
+
+# Define a SessionState object
+session_state = st.session_state
+
+# Perform inference if an image is uploaded and the function has not been run yet or if a new image is uploaded
+if (uploaded_image is not None and 'detected_object' not in session_state) or session_state['image uploaded'] > 1:
+    # Run the rubbish_detector function
+    detected_object, confidence = rubbish_detector(image)
+    session_state['detected_object'] = detected_object
+    session_state['confidence'] = confidence
+    session_state['image uploaded'] = 1
 
 # Load location data
 suburbs = loadlocationdata()
 
 # Allow user to select their location
-selected_suburb = st.selectbox("Suburb", suburbs, index=None, placeholder="Select a Suburb ...",)
-selected_street = st.text_input("Street Name")
-selected_number = st.text_input("Street Number")
+if 'detected_object' in session_state:
+    with st.container(border=True):
+        st.subheader("Please enter the rubbish location ")
+        selected_suburb = st.selectbox("Suburb", suburbs, index=None, placeholder="Select a Suburb . . .",)
+        col1, col2 = st.columns(2)
+        selected_street = col1.text_input("Street Name", placeholder="Enter a Street Name . . .   e.g. Smith Street")
+        selected_number = col2.text_input("Street Number")
 
-if selected_suburb is not None and selected_suburb != "":
-    geolocate()
+        if selected_street is not None and selected_street != "":
+            geolocate()
 
-# Button to trigger inference
-if st.button("Detect Rubbish"):
-    # Perform inference
-    rubbish_detector(image)
+# Display inference results if available
+if 'detected_object' in session_state:
+    with st.container(border=True):
+        string = f"Image matched with {session_state['confidence']} confidence."
+        st.info(string, icon="ℹ️")
+        st.write("The photo submitted looks like a ", session_state['detected_object'], " is that right?")
+        col_1, col_2 = st.columns([.1,1])
+        button_yes = col_1.button("Yes")
+        button_no = col_2.button("No")
+        if button_yes:
+            st.balloons()
+        if button_no:
+            st.snow()
+
+session_state
