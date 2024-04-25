@@ -13,7 +13,7 @@ CLIENT = InferenceHTTPClient(
 )
 
 #testing title
-st.title("***TESTING PAGE***")
+st.title("*** ***TESTING PAGE*** ***")
 
 
 # Function to perform inference on uploaded image
