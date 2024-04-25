@@ -63,9 +63,10 @@ def geolocate():
     return st_folium(map, height=400)
 
 
-# ----------------     Streamlit app     ----------------
-st.title("The Desktop Prototype")
-st.header("Image Upload Section")
+# --------------------------------     Streamlit app     --------------------------------
+st.title("Innovation Studio - Rubbish reporting app")
+
+st.subheader("Please take a photo or upload an image")
 
 # Define a SessionState object
 session_state = st.session_state
