@@ -12,6 +12,10 @@ CLIENT = InferenceHTTPClient(
     api_key=st.secrets['api_key']
 )
 
+#testing title
+st.title("***TESTING PAGE***")
+
+
 # Function to perform inference on uploaded image
 def rubbish_detector(image_file):
     with st.spinner('Please wait for image classification . . . .'):
