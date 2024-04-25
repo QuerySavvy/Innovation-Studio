@@ -78,6 +78,7 @@ uploaded_image = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "pn
 if uploaded_image is not None:
     # Display the uploaded image
     image = Image.open(uploaded_image)
+    image = ImageOps.exif_transpose(image)
     st.image(image, width=250, caption="Uploaded Image")
     session_state['image uploaded'] += 1
 
