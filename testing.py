@@ -9,7 +9,7 @@ from geopy.geocoders import Nominatim
 # initialize the client
 CLIENT = InferenceHTTPClient(
     api_url="https://detect.roboflow.com",
-    api_key=st.secret['api_key']
+    api_key=st.secrets['api_key']
 )
 
 # Function to perform inference on uploaded image
