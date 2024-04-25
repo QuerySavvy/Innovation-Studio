@@ -64,14 +64,14 @@ def geolocate():
 
 
 # ----------------     Streamlit app     ----------------
-st.title("* Test Environment *")
+st.title("The Desktop Prototype")
 st.header("Image Upload Section")
 
 # Define a SessionState object
 session_state = st.session_state
 
 if 'image uploaded' not in session_state:
-    session_state['image uploaded'] = 0
+    session_state['image uploaded'] = None
 
 # Allow user to upload an image
 uploaded_image = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
@@ -80,18 +80,17 @@ if uploaded_image is not None:
     image = Image.open(uploaded_image)
     image = ImageOps.exif_transpose(image)
     st.image(image, width=250, caption="Uploaded Image")
-    session_state['image uploaded'] += 1
-
+    
 # Define a SessionState object
 session_state = st.session_state
 
 # Perform inference if an image is uploaded and the function has not been run yet or if a new image is uploaded
-if (uploaded_image is not None and 'detected_object' not in session_state) or session_state['image uploaded'] > 1:
+if uploaded_image is not None and session_state['image uploaded'] !=  uploaded_image.name:
     # Run the rubbish_detector function
     detected_object, confidence = rubbish_detector(image)
     session_state['detected_object'] = detected_object
     session_state['confidence'] = confidence
-    session_state['image uploaded'] = 1
+    session_state['image uploaded'] = uploaded_image.name
 
 # Load location data
 suburbs = loadlocationdata()
