@@ -64,7 +64,7 @@ def geolocate():
 
 
 # ----------------     Streamlit app     ----------------
-st.title("The Desktop Prototype")
+st.title("****    Test Environment    ****")
 st.header("Image Upload Section")
 
 # Define a SessionState object
