@@ -126,4 +126,38 @@ if 'detected_object' in session_state:
         if button_no:
             st.snow()
 
+# ------------------------------------------------------------------------------------------------   New feature testing
+# Display a button to trigger location retrieval
+if st.button('Get Current Location'):
+    st.write("Fetching location...")
+
+    # Inject JavaScript code to retrieve location
+    js_code = """
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition((position) => {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
+            const locationData = {'latitude': latitude, 'longitude': longitude};
+            // Send location data back to Streamlit
+            Streamlit.setComponentValue(locationData);
+        });
+    } else {
+        console.log("Geolocation is not supported by this browser.");
+    }
+    """
+
+    # Run the injected JavaScript code
+    st.components.v1.html(
+        f'<script>{js_code}</script>',
+        height=0
+    )
+
+    # Receive location data from JavaScript
+    location_data = st.session_state.get('location_data')
+    if location_data:
+        st.write("Your current location:")
+        st.write(location_data)
+
+# ------------------------------------------------------------------------------------------------   New feature testing
+
 session_state
