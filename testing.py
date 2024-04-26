@@ -151,6 +151,13 @@ if st.button('Get Current Location'):
         f'<script>{js_code}</script>',
         height=0
     )
+   
+    # Render the component and get the value sent back
+    component_value = html(js_code)
+
+    # Display the value returned from the component
+    st.write("Value returned from the component:", component_value)
+
 
     # Receive location data from JavaScript
     location_data = st.session_state.get('location_data')
