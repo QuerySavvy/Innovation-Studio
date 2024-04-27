@@ -117,9 +117,8 @@ if 'detected_object' in session_state:
             st.subheader("Please enter the rubbish location ")
         with col2.container():
             st.write(":round_pushpin: Locate Me ")
-        with col3.container():
-            st.write("Placeholder")
-            #location = streamlit_geolocation()
+        with col3.container(border=True):
+            location = streamlit_geolocation()
         if 'loc' in session_state:
              geolocate_v2()
              
@@ -147,9 +146,7 @@ if 'detected_object' in session_state:
 # --------------------------------     Streamlit app - end     --------------------------------
 
 # ------------------------------------------------------------------------------------------------   New feature testing
-st.header("Raw feature testing")
-testingwidget = streamlit_geolocation()
-st.write(testingwidget)
+
 
 # ------------------------------------------------------------------------------------------------   New feature testing
 
