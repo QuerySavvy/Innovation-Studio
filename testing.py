@@ -114,11 +114,12 @@ if 'detected_object' in session_state:
     with st.container(border=True):
         col1, col2, col3 = st.columns([1,0.2,0.1])
         with col1.container():
-                st.subheader("Please enter the rubbish location ")
+            st.subheader("Please enter the rubbish location ")
         with col2.container():
-                #st.write(":round_pushpin: Locate Me ")
+            st.write(":round_pushpin: Locate Me ")
         with col3.container():
-                location = streamlit_geolocation()
+            st.write("Placeholder")
+            #location = streamlit_geolocation()
         if 'loc' in session_state:
              geolocate_v2()
              
