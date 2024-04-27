@@ -148,7 +148,7 @@ if 'detected_object' in session_state:
 # ------------------------------------------------------------------------------------------------   New feature testing
 st.header("Raw feature testing")
 location = streamlit_geolocation()
-st.write('location')
+st.write(location)
 
 # ------------------------------------------------------------------------------------------------   New feature testing
 
