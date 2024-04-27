@@ -15,6 +15,7 @@ CLIENT = InferenceHTTPClient(
 #testing title
 st.title("*** ***TESTING PAGE*** ***")
 
+# --------------------------------     Copy/Paste code below this line     --------------------------------
 
 # Function to perform inference on uploaded image
 def rubbish_detector(image_file):
@@ -66,8 +67,15 @@ def geolocate():
     # Display map
     return st_folium(map, height=400)
 
+def geolocate_v2():
+    if session_state["loc"] is not None:
+        geolocator = Nominatim(user_agent="UTS_APP")
+        coordinates = (session_state["loc"]["latitude"],session_state["loc"]["longitude"])
+        location = geolocator.reverse(coordinates)
+        st.write("Address:", location)
 
-# --------------------------------     Streamlit app     --------------------------------
+
+# --------------------------------     Streamlit app - start     --------------------------------
 st.title("Curbside rubbish reporting app")
 
 st.subheader("Please take a photo or upload an image")
@@ -103,7 +111,16 @@ suburbs = loadlocationdata()
 # Allow user to select their location
 if 'detected_object' in session_state:
     with st.container(border=True):
-        st.subheader("Please enter the rubbish location ")
+        col1, col2, col3 = st.columns([1,0.2,0.1])
+        with col1.container():
+                st.subheader("Please enter the rubbish location ")
+        with col2.container():
+                st.write(":round_pushpin: Locate Me ")
+        with col3.container():
+                location = streamlit_geolocation()
+        if 'loc' in session_state:
+             geolocate_v2()
+             
         selected_suburb = st.selectbox("Suburb", suburbs, index=None, placeholder="Select a Suburb . . .",)
         col1, col2 = st.columns(2)
         selected_street = col1.text_input("Street Name", placeholder="Enter a Street Name . . .   e.g. Smith Street")
@@ -125,6 +142,7 @@ if 'detected_object' in session_state:
             st.balloons()
         if button_no:
             st.snow()
+# --------------------------------     Streamlit app - end     --------------------------------
 
 # ------------------------------------------------------------------------------------------------   New feature testing
 
