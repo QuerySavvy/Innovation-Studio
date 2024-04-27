@@ -5,6 +5,7 @@ import pandas as pd
 import folium
 from streamlit_folium import st_folium
 from geopy.geocoders import Nominatim
+from streamlit_geolocation import streamlit_geolocation
 
 # initialize the client
 CLIENT = InferenceHTTPClient(
