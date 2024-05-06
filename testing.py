@@ -81,6 +81,9 @@ st.title("Curbside rubbish reporting app")
 
 st.subheader("Please take a photo or upload an image")
 
+location = streamlit_geolocation()
+st.write(location)
+
 # Define a SessionState object
 session_state = st.session_state
 
