@@ -5,7 +5,7 @@ import pandas as pd
 import folium
 from streamlit_folium import st_folium
 from geopy.geocoders import Nominatim
-from streamlit_geolocation import streamlit_geolocation
+from streamlit_js_eval import get_geolocation
 
 # initialize the client
 CLIENT = InferenceHTTPClient(
@@ -37,6 +37,7 @@ def loadlocationdata():
     data = data[data['state'] == "NSW"]
     data = data.drop_duplicates('locality')
     suburbs = data['locality'].to_list()
+    suburbs = [suburb.title() for suburb in suburbs]
     suburbs.sort()
     return suburbs
 
@@ -45,44 +46,61 @@ def geolocate():
     geolocator = Nominatim(user_agent="UTS_APP")
     if selected_street is not None and selected_street != "":
         if selected_number is not None and selected_number != "":
-            geo_location = geolocator.geocode(selected_number +" "+selected_street +" "+ selected_suburb+" "+"NSW, Australia")
+            geo_location = geolocator.geocode(selected_number +" "+selected_street +" "+ selected_suburb+", "+ state +", "+country,addressdetails=True)
             coordinates = (geo_location.latitude, geo_location.longitude)
             map = folium.Map(location=coordinates, zoom_start=17)
             folium.Marker([geo_location.latitude, geo_location.longitude]).add_to(map)
         else:
-            geo_location = geolocator.geocode(selected_street +" "+ selected_suburb+" "+"NSW, Australia")
+            geo_location = geolocator.geocode(selected_street +" "+ selected_suburb+", "+ state +", "+country,addressdetails=True)
             coordinates = (geo_location.latitude, geo_location.longitude)
             map = folium.Map(location=coordinates, zoom_start=17)
             folium.Marker([geo_location.latitude, geo_location.longitude]).add_to(map)
     else:
-        geo_location = geolocator.geocode(selected_suburb+" "+", NSW, Australia")
+        geo_location = geolocator.geocode(selected_suburb+", "+ state +", "+country,addressdetails=True)
         coordinates = (geo_location.latitude, geo_location.longitude)
         map = folium.Map(location=coordinates, zoom_start=14)
+    
     # Display location address and coordinates
     address = geo_location.address
-    if not address[0].isdigit() and selected_number!= "":
+    if "house_number" not in geo_location.raw['address']:
         address = selected_number + ", " + address
         st.warning('Unable to find exact location on map', icon="⚠️")
-    st.write("Address:", address)
+    st.write("Full Address:", address)
+    
+    #used for testing
+    #st.write(geo_location.raw['address'])
 
     # Display map
     return st_folium(map, height=400)
 
-def geolocate_v2():
-    if session_state["loc"] is not None:
-        geolocator = Nominatim(user_agent="UTS_APP")
-        coordinates = (session_state["loc"]["latitude"],session_state["loc"]["longitude"])
-        location = geolocator.reverse(coordinates)
-        st.write("Address:", location)
+def locate_me():
+    latitude = loc['coords']['latitude']
+    longitude = loc['coords']['longitude']
+    coordinates = (latitude, longitude)
+
+    geolocator = Nominatim(user_agent="UTS_APP")
+    location = geolocator.reverse(coordinates)
+    address_raw = location.raw['address']
+    
+    #used for testing
+    #st.write(location.raw)
+
+    country = address_raw['country']
+    state = address_raw['state']
+    city = address_raw['city']
+    suburb = address_raw['city']
+    road = address_raw['road']
+    
+    return country, state, city, suburb, road
 
 
-# --------------------------------     Streamlit app - start     --------------------------------
+# --------------------------------     Streamlit app     --------------------------------
 st.title("Curbside rubbish reporting app")
+#Run the geolocation
+loc = get_geolocation()
 
+#photo subheader
 st.subheader("Please take a photo or upload an image")
-
-location = streamlit_geolocation()
-st.write(location)
 
 # Define a SessionState object
 session_state = st.session_state
@@ -113,25 +131,40 @@ if uploaded_image is not None and session_state['image uploaded'] !=  uploaded_i
 suburbs = loadlocationdata()
 
 # Allow user to select their location
-if 'detected_object' in session_state:
-    with st.container(border=True):
-        col1, col2, col3 = st.columns([1,0.2,0.1])
-        with col1.container():
-            st.subheader("Please enter the rubbish location ")
-        with col2.container():
-            st.write(":round_pushpin: Locate Me ")
-        with col3.container():
-            streamlit_geolocation()
-        if 'loc' in session_state:
-             geolocate_v2()
-             
-        selected_suburb = st.selectbox("Suburb", suburbs, index=None, placeholder="Select a Suburb . . .",)
-        col1, col2 = st.columns(2)
-        selected_street = col1.text_input("Street Name", placeholder="Enter a Street Name . . .   e.g. Smith Street")
-        selected_number = col2.text_input("Street Number")
+#if 'detected_object' in session_state:
 
-        if selected_street is not None and selected_street != "":
-            geolocate()
+with st.container(border=True):
+    st.subheader("Please enter the rubbish location ")
+
+
+    if st.button(":round_pushpin: Locate Me "):
+        session_state['locate_me'] = True
+
+    if 'locate_me' in session_state:
+        if session_state['locate_me'] == True:
+            try:
+                country, state, city, suburb, road = locate_me()
+            except:
+                st.warning('Geolocation service currently unavailable', icon="⚠️")
+    
+    else:
+        country = ""
+        state = ""
+        city = ""
+        suburb = ""
+        road = ""
+
+    suburbs.insert(0, suburb)
+    selected_suburb = st.selectbox("Suburb",suburbs, index=0, placeholder="Select a Suburb . . .",)
+
+    col1, col2 = st.columns(2)
+    selected_street = col1.text_input("Street Name", value=road,placeholder="Enter a Street Name . . .   e.g. Smith Street")
+    selected_number = col2.text_input("Street Number",placeholder="Enter your street number")
+
+
+    if selected_street is not None and selected_street != "":
+        geolocate()
+
 
 # Display inference results if available
 if 'detected_object' in session_state:
@@ -146,6 +179,7 @@ if 'detected_object' in session_state:
             st.balloons()
         if button_no:
             st.snow()
+
 # --------------------------------     Streamlit app - end     --------------------------------
 
 # ------------------------------------------------------------------------------------------------   New feature testing
@@ -153,4 +187,6 @@ if 'detected_object' in session_state:
 
 # ------------------------------------------------------------------------------------------------   New feature testing
 
-session_state
+with st.container(border=True):
+    st.subheader("Backend Code information")
+    session_state
