@@ -185,8 +185,13 @@ if 'detected_object' in session_state:
 # ------------------------------------------------------------------------------------------------   New feature testing
 
 
+#Testing only
+#with st.container(border=True):
+#    st.subheader("Backend Code information")
+#    session_state
+
+
+
 # ------------------------------------------------------------------------------------------------   New feature testing
 
-with st.container(border=True):
-    st.subheader("Backend Code information")
-    session_state
+
