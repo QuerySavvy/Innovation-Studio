@@ -18,6 +18,7 @@ st.title("*** ***TESTING PAGE*** ***")
 
 # --------------------------------     Copy/Paste code below this line     --------------------------------
 
+
 # Function to perform inference on uploaded image
 def rubbish_detector(image_file):
     with st.spinner('Please wait for image classification . . . .'):
@@ -179,7 +180,6 @@ if 'detected_object' in session_state:
             st.balloons()
         if button_no:
             st.snow()
-
 # --------------------------------     Streamlit app - end     --------------------------------
 
 # ------------------------------------------------------------------------------------------------   New feature testing
