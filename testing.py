@@ -129,13 +129,11 @@ with st.container(border=True):
                 selected_number = col2.text_input("Street Number",placeholder="Enter your street number")
             except:
                 st.warning('Geolocation service currently unavailable', icon="⚠️")
-    
     else:
-
-    selected_suburb = st.selectbox("Suburb",suburbs, index=None, placeholder="Select a Suburb . . .",)
-    col1, col2 = st.columns(2)
-    selected_street = col1.text_input("Street Name", placeholder="Enter a Street Name . . .   e.g. Smith Street")
-    selected_number = col2.text_input("Street Number",placeholder="Enter your street number")
+        selected_suburb = st.selectbox("Suburb",suburbs, index=None, placeholder="Select a Suburb . . .",)
+        col1, col2 = st.columns(2)
+        selected_street = col1.text_input("Street Name", placeholder="Enter a Street Name . . .   e.g. Smith Street")
+        selected_number = col2.text_input("Street Number",placeholder="Enter your street number")
     
     if selected_street is not None and selected_street != "":
         geolocate()
