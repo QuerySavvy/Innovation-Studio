@@ -89,10 +89,9 @@ def locate_me():
     country = address_raw['country']
     state = address_raw['state']
     city = address_raw['city']
-    suburb = address_raw['city']
     road = address_raw['road']
     
-    return country, state, city, suburb, road
+    return country, state, city, road
 
 
 # --------------------------------     Streamlit app     --------------------------------
@@ -152,10 +151,9 @@ with st.container(border=True):
         country = ""
         state = ""
         city = ""
-        suburb = ""
         road = ""
 
-    suburbs.insert(0, suburb)
+    suburbs.insert(0, city)
     selected_suburb = st.selectbox("Suburb",suburbs, index=0, placeholder="Select a Suburb . . .",)
 
     col1, col2 = st.columns(2)
