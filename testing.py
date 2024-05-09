@@ -194,10 +194,10 @@ if st.button("TEST ME"):
     #used for testing
     st.write(location.raw)
     
-#Testing only
-#with st.container(border=True):
-#    st.subheader("Backend Code information")
-#    session_state
+Testing only
+with st.container(border=True):
+    st.subheader("Backend Code information")
+    session_state
 
 
 
