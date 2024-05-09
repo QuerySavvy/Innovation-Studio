@@ -136,6 +136,11 @@ suburbs = loadlocationdata()
 with st.container(border=True):
     st.subheader("Please enter the rubbish location ")
 
+#Initiliaise values
+country = ""
+state = ""
+city = ""
+road = ""
 
     if st.button(":round_pushpin: Locate Me "):
         session_state['locate_me'] = True
