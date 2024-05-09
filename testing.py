@@ -133,14 +133,14 @@ suburbs = loadlocationdata()
 # Allow user to select their location
 #if 'detected_object' in session_state:
 
-with st.container(border=True):
-    st.subheader("Please enter the rubbish location ")
-
 #Initiliaise values
 country = ""
 state = ""
 city = ""
 road = ""
+
+with st.container(border=True):
+    st.subheader("Please enter the rubbish location ")
 
     if st.button(":round_pushpin: Locate Me "):
         session_state['locate_me'] = True
