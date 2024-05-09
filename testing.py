@@ -114,26 +114,29 @@ suburbs = loadlocationdata()
 #if 'detected_object' in session_state:
 with st.container(border=True):
     st.subheader("Please enter the rubbish location ")
+    
     if st.button(":round_pushpin: Locate Me "):
         session_state['locate_me'] = True
     if 'locate_me' in session_state:
         if session_state['locate_me'] == True:
             try:
                 country, state, city, suburb, road = locate_me()
+                
+                suburbs.insert(0, suburb)
+                selected_suburb = st.selectbox("Suburb",suburbs, index=0, placeholder="Select a Suburb . . .",)
+                col1, col2 = st.columns(2)
+                selected_street = col1.text_input("Street Name", value=road,placeholder="Enter a Street Name . . .   e.g. Smith Street")
+                selected_number = col2.text_input("Street Number",placeholder="Enter your street number")
             except:
                 st.warning('Geolocation service currently unavailable', icon="⚠️")
     
     else:
-        country = ""
-        state = ""
-        city = ""
-        suburb = ""
-        road = ""
-    suburbs.insert(0, suburb)
-    selected_suburb = st.selectbox("Suburb",suburbs, index=0, placeholder="Select a Suburb . . .",)
+
+    selected_suburb = st.selectbox("Suburb",suburbs, index=None, placeholder="Select a Suburb . . .",)
     col1, col2 = st.columns(2)
-    selected_street = col1.text_input("Street Name", value=road,placeholder="Enter a Street Name . . .   e.g. Smith Street")
+    selected_street = col1.text_input("Street Name", placeholder="Enter a Street Name . . .   e.g. Smith Street")
     selected_number = col2.text_input("Street Number",placeholder="Enter your street number")
+    
     if selected_street is not None and selected_street != "":
         geolocate()
 # Display inference results if available
