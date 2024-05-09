@@ -152,6 +152,17 @@ if 'detected_object' in session_state:
 # --------------------------------     Streamlit app - end     --------------------------------
 # ------------------------------------------------------------------------------------------------   New feature testing
 
+if st.button("TEST ME"):
+    latitude = loc['coords']['latitude']
+    longitude = loc['coords']['longitude']
+    coordinates = (latitude, longitude)
+
+    geolocator = Nominatim(user_agent="UTS_APP")
+    location = geolocator.reverse(coordinates)
+    address_raw = location.raw['address']
+    
+    #used for testing
+    st.write(location.raw)
 
 #Testing only
 #with st.container(border=True):
