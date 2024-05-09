@@ -144,17 +144,17 @@ with st.container(border=True):
         if session_state['locate_me'] == True:
             try:
                 country, state, city, suburb, road = locate_me()
+                suburbs.insert(0, city)
+                selected_suburb = st.selectbox("Suburb",suburbs, index=0, placeholder="Select a Suburb . . .",)
             except:
                 st.warning('Geolocation service currently unavailable', icon="⚠️")
     
     else:
+        selected_suburb = st.selectbox("Suburb",suburbs, index=0, placeholder="Select a Suburb . . .",)
         country = ""
         state = ""
         city = ""
         road = ""
-
-    suburbs.insert(0, city)
-    selected_suburb = st.selectbox("Suburb",suburbs, index=0, placeholder="Select a Suburb . . .",)
 
     col1, col2 = st.columns(2)
     selected_street = col1.text_input("Street Name", value=road,placeholder="Enter a Street Name . . .   e.g. Smith Street")
