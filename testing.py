@@ -16,8 +16,6 @@ st.title("*** ***TESTING PAGE*** ***")
 
 
 # --------------------------------     Copy/Paste code below this line     --------------------------------
-
-
 # Function to perform inference on uploaded image
 def rubbish_detector(image_file):
     with st.spinner('Please wait for image classification . . . .'):
@@ -77,9 +75,9 @@ def locate_me():
     location = geolocator.reverse(coordinates)
     address_raw = location.raw['address']
 
-    country = address_raw.get('country')
-    state = address_raw.get('state')
-    road = address_raw.get('road')
+    country = address_raw['country']
+    state = address_raw['state']
+    road = address_raw['road']
 
     # Define a list of potential fields for the city or suburb field
     city_field = ['city', 'suburb', 'town', 'village']
@@ -90,7 +88,11 @@ def locate_me():
         if key in address_raw:
             city = address_raw[key]
             break
-    return country, state, city, road
+    number = None
+    if 'house_number' in address_raw:
+        number = address_raw['house_number']
+    
+    return country, state, city, road, number
 
 # ----------------------------------------------------------------     Streamlit app     ----------------------------------------------------------------
 st.title("Curbside rubbish reporting app")
@@ -132,7 +134,7 @@ with st.container(border=True):
 
     if 'locate_me' in session_state:
         try:
-            country, state, city, road = locate_me()
+            country, state, city, road, number = locate_me()
             suburbs.insert(0, city)
         except:
             st.warning('Geolocation service currently unavailable', icon="⚠️")
@@ -143,7 +145,7 @@ with st.container(border=True):
     selected_suburb = st.selectbox("Suburb", suburbs, index=0 if 'locate_me' in session_state else None, placeholder="Select a Suburb . . .",)
     col1, col2 = st.columns(2)
     selected_street = col1.text_input("Street Name", value=road if 'locate_me' in session_state else "", placeholder="Enter a Street Name . . .   e.g. Smith Street")
-    selected_number = col2.text_input("Street Number", placeholder="Enter your street number")
+    selected_number = col2.text_input("Street Number", value=number if 'locate_me' in session_state else "",placeholder="Enter your street number")
 
     if selected_suburb and (not selected_street or not selected_number):
         st.warning("Please enter a value in every field.")
@@ -190,3 +192,4 @@ with st.container(border=True):
 
 
 # ------------------------------------------------------------------------------------------------   New feature testing
+
