@@ -92,7 +92,7 @@ session_state = st.session_state
 if 'image uploaded' not in session_state:
     session_state['image uploaded'] = None
 # Allow user to upload an image
-uploaded_image = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
+uploaded_image = st.file_uploader("Choose an image...", type=["jpg", "jpeg"])
 if uploaded_image is not None:
     # Display the uploaded image
     image = Image.open(uploaded_image)
