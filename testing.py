@@ -172,21 +172,25 @@ if 'detected_object' in session_state:
 with st.container(border=True):
     st.subheader("Geolocation troubleshooting")
 
-    if st.button("Geolocate Me"):
-        latitude = loc['coords']['latitude']
-        longitude = loc['coords']['longitude']
-        coordinates = (latitude, longitude)
 
-        geolocator = Nominatim(user_agent="UTS_APP")
-        location = geolocator.reverse(coordinates)
-        address_raw = location.raw['address']
-        
-        #used for testing
-        st.write(address_raw)
 
 #Testing only
 with st.container(border=True):
     st.subheader("Backend Code information")
+
+    st.info('Address Information')
+    latitude = loc['coords']['latitude']
+    longitude = loc['coords']['longitude']
+    coordinates = (latitude, longitude)
+
+    geolocator = Nominatim(user_agent="UTS_APP")
+    location = geolocator.reverse(coordinates)
+    address_raw = location.raw['address']
+    
+    #used for testing
+    st.write(address_raw)
+
+    st.info('Session State Information')
     session_state
 
 
