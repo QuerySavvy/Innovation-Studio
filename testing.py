@@ -38,9 +38,6 @@ def loadlocationdata():
     suburbs.sort()
     return suburbs
 
-@st.cache_data
-def get_cache_geolocation():
-    return get_geolocation()
 
 def geolocate(country, state, city, road, number):
     try:
@@ -101,7 +98,7 @@ def locate_me():
 # ----------------------------------------------------------------     Streamlit app     ----------------------------------------------------------------
 st.title("Curbside rubbish reporting app")
 #Run the geolocation engine
-loc = get_cache_geolocation()
+loc = get_geolocation()
 
 #Photo subheader
 st.subheader("Please take a photo or upload an image")
