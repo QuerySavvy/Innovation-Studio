@@ -182,16 +182,17 @@ with st.container(border=True):
     st.subheader("Backend Code information")
 
     st.info('Address Information')
-    latitude = loc['coords']['latitude']
-    longitude = loc['coords']['longitude']
-    coordinates = (latitude, longitude)
+    if loc is not None:
+        latitude = loc['coords']['latitude']
+        longitude = loc['coords']['longitude']
+        coordinates = (latitude, longitude)
 
-    geolocator = Nominatim(user_agent="UTS_APP")
-    location = geolocator.reverse(coordinates)
-    address_raw = location.raw['address']
+        geolocator = Nominatim(user_agent="UTS_APP")
+        location = geolocator.reverse(coordinates)
+        address_raw = location.raw['address']
     
     #used for testing
-    st.write(address_raw)
+        st.write(address_raw)
 
     st.info('Session State Information')
     session_state
