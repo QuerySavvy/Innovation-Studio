@@ -102,9 +102,8 @@ st.title("Curbside rubbish reporting app")
 session_state = st.session_state
 
 #Run the geolocation engine
-if 'geoloc' not in session_state:
-    loc = get_geolocation()
-    session_state['geoloc'] = True
+loc = None
+loc = get_geolocation()
 
 #Photo subheader
 st.subheader("Please take a photo or upload an image")
