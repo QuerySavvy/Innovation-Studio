@@ -97,8 +97,14 @@ def locate_me():
 
 # ----------------------------------------------------------------     Streamlit app     ----------------------------------------------------------------
 st.title("Curbside rubbish reporting app")
+
+# Define a SessionState object
+session_state = st.session_state
+
 #Run the geolocation engine
-loc = get_geolocation()
+if 'geoloc' not in session_state:
+    loc = get_geolocation()
+    session_state['image uploaded'] = True
 
 #Photo subheader
 st.subheader("Please take a photo or upload an image")
