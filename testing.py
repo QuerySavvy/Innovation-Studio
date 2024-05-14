@@ -67,7 +67,7 @@ def geolocate(country, state, city, road, number):
     except Exception as e:
         st.error(f"Map currently unavailable. Please double check the address. \n\nError Message: {e}")
 
-@st.cache_data
+@st.cache_data(experimental_allow_widgets=True)
 def cache_get_geolocation():
     return get_geolocation()
 
