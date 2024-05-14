@@ -14,7 +14,6 @@ CLIENT = InferenceHTTPClient(
 #testing title
 st.title("*** ***TESTING PAGE*** ***")
 
-
 # --------------------------------     Copy/Paste code below this line     --------------------------------
 
 # Function to perform inference on uploaded image
@@ -193,8 +192,6 @@ with st.container(border=True):
 
     st.info('Session State Information')
     session_state
-
-
 
 # ------------------------------------------------------------------------------------------------     testing
 
