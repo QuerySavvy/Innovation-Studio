@@ -182,16 +182,13 @@ with st.container(border=True):
 
     st.info('Address Information')
     if loc is not None:
-        try:
-            latitude = loc['coords']['latitude']
-            longitude = loc['coords']['longitude']
-            coordinates = (latitude, longitude)
-    
-            geolocator = Nominatim(user_agent="UTS_APP")
-            location = geolocator.reverse(coordinates)
-            address_raw = location.raw['address']
-        except:
-            st.warning('location services unavailable on your device')
+        latitude = loc['coords']['latitude']
+        longitude = loc['coords']['longitude']
+        coordinates = (latitude, longitude)
+
+        geolocator = Nominatim(user_agent="UTS_APP")
+        location = geolocator.reverse(coordinates)
+        address_raw = location.raw['address']
     #used for testing
         st.write(address_raw)
 
