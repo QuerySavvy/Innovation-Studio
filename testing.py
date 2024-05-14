@@ -39,8 +39,8 @@ def loadlocationdata():
     return suburbs
 
 @st.cache_data
-def get_cache_geolocation()
-return get_geolocation()
+def get_cache_geolocation():
+    return get_geolocation()
 
 def geolocate(country, state, city, road, number):
     try:
