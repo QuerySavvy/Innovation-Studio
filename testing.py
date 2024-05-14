@@ -67,6 +67,10 @@ def geolocate(country, state, city, road, number):
     except Exception as e:
         st.error(f"Map currently unavailable. Please double check the address. \n\nError Message: {e}")
 
+@st.cache_data
+def cache_get_geolocation():
+    return get_geolocation()
+
 # Geolocation function
 def locate_me():
     latitude = loc['coords']['latitude']
@@ -98,7 +102,7 @@ def locate_me():
 # ----------------------------------------------------------------     Streamlit app     ----------------------------------------------------------------
 st.title("Curbside rubbish reporting app")
 #Run the geolocation engine
-loc = get_geolocation()
+loc = cache_get_geolocation()
 
 #Photo subheader
 st.subheader("Please take a photo or upload an image")
