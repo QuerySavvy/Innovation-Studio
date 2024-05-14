@@ -104,7 +104,7 @@ session_state = st.session_state
 #Run the geolocation engine
 if 'geoloc' not in session_state:
     loc = get_geolocation()
-    session_state['image uploaded'] = True
+    session_state['geoloc'] = True
 
 #Photo subheader
 st.subheader("Please take a photo or upload an image")
