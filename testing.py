@@ -26,6 +26,7 @@ def rubbish_detector(image_file):
     detected_object = result["top"]
     confidence = format(result["confidence"],".2%")
     return detected_object, confidence
+    
 @st.cache_data
 def loadlocationdata():
 # Load suburb data
@@ -38,6 +39,9 @@ def loadlocationdata():
     suburbs.sort()
     return suburbs
 
+@st.cache_data
+def get_cache_geolocation()
+return get_geolocation()
 
 def geolocate(country, state, city, road, number):
     try:
@@ -98,7 +102,7 @@ def locate_me():
 # ----------------------------------------------------------------     Streamlit app     ----------------------------------------------------------------
 st.title("Curbside rubbish reporting app")
 #Run the geolocation engine
-loc = get_geolocation()
+loc = get_cache_geolocation()
 
 #Photo subheader
 st.subheader("Please take a photo or upload an image")
