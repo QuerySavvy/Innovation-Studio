@@ -10,7 +10,6 @@ from datetime import date
 import requests
 from io import BytesIO
 
-
 # initialize the client
 CLIENT = InferenceHTTPClient(
     api_url="https://detect.roboflow.com",
