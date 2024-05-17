@@ -171,7 +171,7 @@ with st.container(border=True):
         
         if session_state['classification'] == True:
             session_state['object'] = session_state['detected_object']
-            st.write("⬇️ Please proceed to the location section. ⬇️")
+            st.success("⬇️ Please proceed to the location section. ⬇️")
 
         if session_state['classification'] == False:
             junk = st.radio(
@@ -180,47 +180,45 @@ with st.container(border=True):
             index=None,)
             session_state['object'] = junk
             if not junk == None:
-                junk_col1, junk_col2 = st.columns(2)
-                with junk_col1:
-                    st.write("You selected:", junk) 
-                with junk_col2:
-                    st.write("⬇️ Please proceed to the location section. ⬇️")
+                st.write("You selected:", junk) 
+                st.success("⬇️ Please proceed to the location section. ⬇️")
 
 
 # Load location data
 suburbs = loadlocationdata()
 
-# Create container for location section 
-with st.container(border=True):
-    st.subheader("Please enter the rubbish location ")
+# Create container for location section
+if not session_state['object'] == None:
+    with st.container(border=True):
+        st.subheader("Please enter the rubbish location ")
 
-    if st.button(":round_pushpin: Locate Me "):
-        session_state['locate_me'] = True
+        if st.button(":round_pushpin: Locate Me "):
+            session_state['locate_me'] = True
 
-    if 'locate_me' in session_state:
-        try:
-            country, state, city, road, number = locate_me()
-            suburbs.insert(0, city)
-        except:
-            st.warning('Geolocation service currently unavailable', icon="⚠️")
-    else:
-        country = "Australia"
-        state = "NSW"
+        if 'locate_me' in session_state:
+            try:
+                country, state, city, road, number = locate_me()
+                suburbs.insert(0, city)
+            except:
+                st.warning('Geolocation service currently unavailable', icon="⚠️")
+        else:
+            country = "Australia"
+            state = "NSW"
 
-    selected_suburb = st.selectbox("Suburb", suburbs, index=0 if 'locate_me' in session_state else None, placeholder="Select a Suburb . . .",)
-    col1, col2 = st.columns(2)
-    selected_street = col1.text_input("Street Name", value=road if 'locate_me' in session_state else "", placeholder="Enter a Street Name . . .   e.g. Smith Street")
-    selected_number = col2.text_input("Street Number", value=number if 'locate_me' in session_state else "",placeholder="Enter your street number")
+        selected_suburb = st.selectbox("Suburb", suburbs, index=0 if 'locate_me' in session_state else None, placeholder="Select a Suburb . . .",)
+        col1, col2 = st.columns(2)
+        selected_street = col1.text_input("Street Name", value=road if 'locate_me' in session_state else "", placeholder="Enter a Street Name . . .   e.g. Smith Street")
+        selected_number = col2.text_input("Street Number", value=number if 'locate_me' in session_state else "",placeholder="Enter your street number")
 
-    if selected_suburb and (not selected_street or not selected_number):
-        st.warning("Please enter a value in every field.")
+        if selected_suburb and (not selected_street or not selected_number):
+            st.warning("Please enter a value in every field.")
 
-    if selected_suburb and selected_street and selected_number:
-        geolocate(country, state, selected_suburb, selected_street, selected_number)
-        session_state['address'] = selected_number + ', ' + selected_street + ', ' + selected_suburb
-        session_state['form'] = 'ready'
+        if selected_suburb and selected_street and selected_number:
+            geolocate(country, state, selected_suburb, selected_street, selected_number)
+            session_state['address'] = selected_number + ', ' + selected_street + ', ' + selected_suburb
+            session_state['form'] = 'ready'
 
-
+# the form to submit the information
 if session_state['form'] == 'ready':
     with st.container(border=True):
         st.subheader("Submit your report")
