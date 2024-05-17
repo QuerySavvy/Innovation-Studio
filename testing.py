@@ -15,6 +15,8 @@ CLIENT = InferenceHTTPClient(
     api_url="https://detect.roboflow.com",
     api_key=st.secrets['api_key']
 )
+
+
 #testing title
 st.title("*** ***TESTING PAGE*** ***")
 
