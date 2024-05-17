@@ -3,9 +3,14 @@ from inference_sdk import InferenceHTTPClient
 from PIL import Image, ImageOps
 import pandas as pd
 import folium
-from streamlit_folium import st_folium
 from geopy.geocoders import Nominatim
+from streamlit_folium import st_folium
 from streamlit_js_eval import get_geolocation
+from datetime import date
+import requests
+from io import BytesIO
+
+
 # initialize the client
 CLIENT = InferenceHTTPClient(
     api_url="https://detect.roboflow.com",
@@ -95,43 +100,98 @@ def locate_me():
     
     return country, state, city, road, number
 
+def thank_you_page():
+    url = 'https://github.com/QuerySavvy/Innovation-Studio/blob/main/pngtree-goldan-3d-star-emoji-icon-png-image_10459560.png?raw=true'
+
+    response = requests.get(url)
+    image = Image.open(BytesIO(response.content))
+
+    with st.container(border=True):
+        congrats_col1, congrats_col2, congrats_col3 = st.columns([2,6,2])
+        with congrats_col2:
+            st.image(image)
+        st.subheader("Congrations you have earned 10 Junk points")
+
+
 # ----------------------------------------------------------------     Streamlit app     ----------------------------------------------------------------
 st.title("Curbside rubbish reporting app")
 
 # Define a SessionState object
 session_state = st.session_state
 
+# Initialise the session state variables before the user uploads an image
+if 'image uploaded' not in session_state:
+    session_state['image uploaded'] = None
+    session_state['classification'] = None
+    session_state['object'] = None
+    session_state['address'] = None
+    session_state['form'] = None
+
 #Run the geolocation engine
 loc = None
 loc = get_geolocation()
 
-#Photo subheader
-st.subheader("Please take a photo or upload an image")
+with st.expander('Click to find out more'):
+        st.write("bla bla bla bla. do we wanna add some bla bla here?")
 
-# Define a SessionState object
-session_state = st.session_state
-if 'image uploaded' not in session_state:
-    session_state['image uploaded'] = None
+#Create the container for the image section 
+with st.container(border=True):
 
-# Allow user to upload an image type=["jpg", "jpeg"]
-uploaded_image = st.file_uploader("Choose an image...", type=["jpg", "jpeg"])
-if uploaded_image is not None:
-    # Display the uploaded image
-    image = Image.open(uploaded_image)
-    image = ImageOps.exif_transpose(image)
+    #Photo subheader
+    st.subheader("Please take a photo or or upload an image to start")
 
-# Perform inference if an image is uploaded and the function has not been run yet or if a new image is uploaded
-if uploaded_image is not None and session_state['image uploaded'] !=  uploaded_image.name + str(uploaded_image.size):
-    # Run the rubbish_detector function
-    detected_object, confidence = rubbish_detector(image)
-    session_state['detected_object'] = detected_object
-    session_state['confidence'] = confidence
-    session_state['image uploaded'] = uploaded_image.name + str(uploaded_image.size)
+    # Allow user to upload an image type=["jpg", "jpeg"]
+    uploaded_image = st.file_uploader("Choose an image...", type=["jpg", "jpeg"])
+    if uploaded_image is not None:
+        # Display the uploaded image
+        image = Image.open(uploaded_image)
+        image = ImageOps.exif_transpose(image)
+        st.write(image)
+
+    # Perform inference if an image is uploaded and the function has not been run yet or if a new image is uploaded
+    if uploaded_image is not None and session_state['image uploaded'] !=  uploaded_image.name + str(uploaded_image.size):
+        # Run the rubbish_detector function
+        detected_object, confidence = rubbish_detector(image)
+        session_state['detected_object'] = detected_object
+        session_state['confidence'] = confidence
+        session_state['image uploaded'] = uploaded_image.name + str(uploaded_image.size)
+
+    # Display inference results if available
+    if 'detected_object' in session_state:
+        string = f"Image matched with {session_state['confidence']} confidence."
+        st.info(string, icon="ℹ️")
+        st.write("The photo submitted looks like a ", session_state['detected_object'], " is that right?")
+        col_1, col_2 = st.columns([.1,1])
+        button_yes = col_1.button("Yes")
+        button_no = col_2.button("No")
+        if button_yes:
+            session_state['classification'] = True
+            st.balloons()
+        if button_no:
+            session_state['classification'] = False
+        
+        if session_state['classification'] == True:
+            session_state['object'] = session_state['detected_object']
+            st.write("⬇️ Please proceed to the location section. ⬇️")
+
+        if session_state['classification'] == False:
+            junk = st.radio(
+            "What is it ?",
+            ['mattress', 'milk crate', 'bicycle', 'couch', 'construction waste', 'car', 'rubbish', 'tyres', 'shopping trolley', 'fridge'],
+            index=None,)
+            session_state['object'] = junk
+            if not junk == None:
+                junk_col1, junk_col2 = st.columns(2)
+                with junk_col1:
+                    st.write("You selected:", junk) 
+                with junk_col2:
+                    st.write("⬇️ Please proceed to the location section. ⬇️")
+
 
 # Load location data
 suburbs = loadlocationdata()
 
-# Allow user to select their location
+# Create container for location section 
 with st.container(border=True):
     st.subheader("Please enter the rubbish location ")
 
@@ -158,25 +218,34 @@ with st.container(border=True):
 
     if selected_suburb and selected_street and selected_number:
         geolocate(country, state, selected_suburb, selected_street, selected_number)
+        session_state['address'] = selected_number + ', ' + selected_street + ', ' + selected_suburb
+        session_state['form'] = 'ready'
 
-# Display inference results if available
-if 'detected_object' in session_state:
+
+if session_state['form'] == 'ready':
     with st.container(border=True):
-        string = f"Image matched with {session_state['confidence']} confidence."
-        st.info(string, icon="ℹ️")
-        st.write("The photo submitted looks like a ", session_state['detected_object'], " is that right?")
-        col_1, col_2 = st.columns([.1,1])
-        button_yes = col_1.button("Yes")
-        button_no = col_2.button("No")
-        if button_yes:
-            st.balloons()
-        if button_no:
-            st.snow()
-# ----------------------------------------------------------------     Streamlit app - end     --------------------------------
+        st.subheader("Submit your report")
+        with st.container(border=True):
+            st.text("Rubish type: " + session_state['object'] + "\n"
+                    "Address: " + session_state['address'] + "\n"
+                    "Report Date: " + str(date.today()))
+        if st.button('Submit to '+selected_suburb + ' council 📨'):
+            session_state['form'] = 'submitted'
+            st.text("Thank you for your submission")
 
-# ------------------------------------------------------------------------------------------------     testing
+if session_state['form'] == 'submitted':
+    st.balloons()
+    thank_you_page()
+
+
+# --------------------------------     Streamlit app - end     --------------------------------
+
+
+# ------------------------------------------------------------------------------------------------   New feature testing
 
 #Testing only
+
+st.title("*** ***BELOW FOR TESTING ONLY*** ***")
 with st.container(border=True):
     st.subheader("Backend Code information")
 
@@ -195,5 +264,4 @@ with st.container(border=True):
     st.info('Session State Information')
     session_state
 
-# ------------------------------------------------------------------------------------------------     testing
-
+# ------------------------------------------------------------------------------------------------   New feature testing
