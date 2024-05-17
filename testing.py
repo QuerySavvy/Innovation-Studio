@@ -109,7 +109,7 @@ def thank_you_page():
         congrats_col1, congrats_col2, congrats_col3 = st.columns([2,6,2])
         with congrats_col2:
             st.image(image)
-        st.subheader("Congrations you have earned 10 Junk points")
+        st.subheader("Congratulations! you earned 10 points")
 
 
 # ----------------------------------------------------------------     Streamlit app     ----------------------------------------------------------------
@@ -171,7 +171,7 @@ with st.container(border=True):
         
         if session_state['classification'] == True:
             session_state['object'] = session_state['detected_object']
-            st.success("⬇️ Please proceed to the location section. ⬇️")
+            st.success("⬇️ Enter location information ⬇️")
 
         if session_state['classification'] == False:
             junk = st.radio(
@@ -181,7 +181,7 @@ with st.container(border=True):
             session_state['object'] = junk
             if not junk == None:
                 st.write("You selected:", junk) 
-                st.success("⬇️ Please proceed to the location section. ⬇️")
+                st.success("⬇️ Enter location information ⬇️")
 
 
 # Load location data
