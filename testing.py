@@ -108,10 +108,11 @@ def thank_you_page():
     image = Image.open(BytesIO(response.content))
 
     with st.container(border=True):
+        st.subheader("Congratulations!")
         congrats_col1, congrats_col2, congrats_col3 = st.columns([2,6,2])
         with congrats_col2:
             st.image(image)
-        st.subheader("Congratulations! you earned 10 points")
+        st.subheader("You earned 10 points")
 
 
 # ----------------------------------------------------------------     Streamlit app     ----------------------------------------------------------------
