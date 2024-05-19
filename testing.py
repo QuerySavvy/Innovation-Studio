@@ -60,6 +60,8 @@ def geolocate(country, state, city, road, number):
         if selected_number:
             geo_location = geolocator.geocode(selected_number +" "+selected_street +" "+ selected_suburb+", "+ state +", "+country,addressdetails=True)
             coordinates = (geo_location.latitude, geo_location.longitude)
+            session_state['latitude'] = geo_location.latitude
+            session_state['longitude'] = geo_location.longitude
             map = folium.Map(location=coordinates, zoom_start=17)
             folium.Marker([geo_location.latitude, geo_location.longitude]).add_to(map)
 
