@@ -303,24 +303,25 @@ if session_state['form'] == 'submitted':
 # ------------------------------------------------------------------------------------------------   New feature testing
 
 #Testing only
-
-st.title("*** ***BELOW FOR TESTING ONLY*** ***")
 with st.container(border=True):
     st.subheader("Backend Code information")
-
-    st.info('Address Information')
-    if loc is not None:
-        latitude = loc['coords']['latitude']
-        longitude = loc['coords']['longitude']
-        coordinates = (latitude, longitude)
-
-        geolocator = Nominatim(user_agent="UTS_APP")
-        location = geolocator.reverse(coordinates)
-        address_raw = location.raw['address']
+    try:
+        st.success('Geolocation OK')
+        if loc is not None:
+            latitude = loc['coords']['latitude']
+            longitude = loc['coords']['longitude']
+            coordinates = (latitude, longitude)
+            geolocator = Nominatim(user_agent="UTS_APP")
+            location = geolocator.reverse(coordinates)
+            address_raw = location.raw['address']
     #used for testing
         st.write(address_raw)
 
+    except:
+        st.error('Geolocation NOT OK')
+
     st.info('Session State Information')
     session_state
+
 
 # ------------------------------------------------------------------------------------------------   New feature testing
