@@ -9,6 +9,8 @@ from streamlit_js_eval import get_geolocation
 from datetime import date
 import requests
 from io import BytesIO
+import gspread
+from google.oauth2.service_account import Credentials
 
 # initialize the client
 CLIENT = InferenceHTTPClient(
@@ -108,11 +110,63 @@ def thank_you_page():
     image = Image.open(BytesIO(response.content))
 
     with st.container(border=True):
-        st.subheader("Congratulations!")
         congrats_col1, congrats_col2, congrats_col3 = st.columns([2,6,2])
         with congrats_col2:
             st.image(image)
-        st.subheader("You earned 10 points")
+        st.subheader("Congrations you have earned 10 Junk points")
+
+def initialise_sheets():
+    with st.spinner('loading . . . .'):
+        credentials_dict = {
+            "type": "service_account",
+            "project_id": "innovationstudio",
+            "private_key_id": "877c2f8e58421fd470a9b0be4bf6617a39318277",
+            "private_key": st.secrets['google_api_key'],
+            "client_email": "innovation-studio@innovationstudio.iam.gserviceaccount.com",
+            "client_id": "103602022291355277889",
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://oauth2.googleapis.com/token",
+            "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+            "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/innovation-studio@innovationstudio.iam.gserviceaccount.com",
+            "universe_domain": "googleapis.com"
+        }
+
+        # Create credentials using the dictionary
+        credentials = Credentials.from_service_account_info(
+            credentials_dict,
+            scopes=["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
+        )
+
+        # Authorize and initialize the gspread client
+        client = gspread.authorize(credentials)
+
+        # Open the Google Sheet by its name
+        workbook = client.open("Sydney_log")
+        data = workbook.get_worksheet(0)  # First sheet
+        users = workbook.get_worksheet(1)  # Second sheet
+
+    # Find the first blank row in the sheet
+    data_next_row = len(data.col_values(1)) + 1
+    users_next_row = len(users.col_values(1)) + 1
+    return data, users, data_next_row, users_next_row
+
+def send_sheets_data(data, data_next_row, Address, Latitude, Longitude, type_of_rubbish, user_IP, image_location):
+    #create the data frame
+    data_df = pd.DataFrame({
+    'Column1': [Address],
+    'Column2': [Latitude],
+    'Column3': [Longitude],
+    'Column4': [type_of_rubbish],
+    'Column5': [user_IP],
+    'Column6': [str(date.today())],
+    'Column7': ['Null']
+    })
+
+    # Find the first blank row in the sheet
+    next_row = len(data.col_values(1)) + 1
+
+    # Insert data into the first blank row without headers
+    data.insert_row(data_df.values[0].tolist(), next_row)
 
 
 # ----------------------------------------------------------------     Streamlit app     ----------------------------------------------------------------
@@ -235,6 +289,9 @@ if session_state['form'] == 'ready':
 
 if session_state['form'] == 'submitted':
     st.balloons()
+    with st.spinner('Loading. . . .'):
+        data, users, data_next_row, users_next_row = initialise_sheets()
+        send_sheets_data(data, data_next_row, session_state['address'], session_state['latitude'], session_state['longitude'], session_state['object'], "tbc", "tbc")
     thank_you_page()
 
 
