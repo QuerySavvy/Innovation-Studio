@@ -112,8 +112,10 @@ def thank_you_page():
     with st.container(border=True):
         congrats_col1, congrats_col2, congrats_col3 = st.columns([2,6,2])
         with congrats_col2:
+            st.header("Congrations !")
             st.image(image)
-        st.subheader("Congrations you have earned 10 Junk points")
+            st.subheader("You earned 10 points")
+
 
 def initialise_sheets():
     with st.spinner('loading . . . .'):
