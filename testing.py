@@ -265,14 +265,15 @@ if not session_state['object'] == None:
                 suburbs.insert(0, city)
             except:
                 st.warning('Geolocation service currently unavailable', icon="⚠️")
+                session_state['locate_me'] = False
         else:
             country = "Australia"
             state = "NSW"
 
-        selected_suburb = st.selectbox("Suburb", suburbs, index=0 if 'locate_me' in session_state else None, placeholder="Select a Suburb . . .",)
+        selected_suburb = st.selectbox("Suburb", suburbs, index=0 if session_state['locate_me'] == True else None, placeholder="Select a Suburb . . .",)
         col1, col2 = st.columns(2)
-        selected_street = col1.text_input("Street Name", value=road if 'locate_me' in session_state else "", placeholder="Enter a Street Name . . .   e.g. Smith Street")
-        selected_number = col2.text_input("Street Number", value=number if 'locate_me' in session_state else "",placeholder="Enter your street number")
+        selected_street = col1.text_input("Street Name",  value=road if session_state['locate_me'] == True else "", placeholder="Enter a Street Name . . .   e.g. Smith Street")
+        selected_number = col2.text_input("Street Number", value=number if session_state['locate_me'] == True else "",placeholder="Enter your street number")
 
         if selected_suburb and (not selected_street or not selected_number):
             st.warning("Please enter a value in every field.")
