@@ -308,7 +308,6 @@ if session_state['form'] == 'submitted':
 with st.container(border=True):
     st.subheader("Backend Code information")
     try:
-        st.success('Geolocation OK')
         if loc is not None:
             latitude = loc['coords']['latitude']
             longitude = loc['coords']['longitude']
@@ -317,6 +316,7 @@ with st.container(border=True):
             location = geolocator.reverse(coordinates)
             address_raw = location.raw['address']
     #used for testing
+        st.success('Geolocation OK')
         st.write(address_raw)
 
     except:
