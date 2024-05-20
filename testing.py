@@ -14,12 +14,26 @@ from google.oauth2.service_account import Credentials
 import time
 
 
-# initialize the client
+# initialize the roboflow client
 CLIENT = InferenceHTTPClient(
     api_url="https://detect.roboflow.com",
     api_key=st.secrets['api_key']
 )
 
+# initialize the googlesheets dictionary
+        credentials_dict = {
+            "type": "service_account",
+            "project_id": "innovationstudio",
+            "private_key_id": "877c2f8e58421fd470a9b0be4bf6617a39318277",
+            "private_key": st.secrets['google_api_key'],
+            "client_email": "innovation-studio@innovationstudio.iam.gserviceaccount.com",
+            "client_id": "103602022291355277889",
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://oauth2.googleapis.com/token",
+            "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+            "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/innovation-studio@innovationstudio.iam.gserviceaccount.com",
+            "universe_domain": "googleapis.com"
+        }
 
 
 #testing title
@@ -124,19 +138,6 @@ def thank_you_page():
 
 def initialise_sheets():
     with st.spinner('loading . . . .'):
-        credentials_dict = {
-            "type": "service_account",
-            "project_id": "innovationstudio",
-            "private_key_id": "877c2f8e58421fd470a9b0be4bf6617a39318277",
-            "private_key": st.secrets['google_api_key'],
-            "client_email": "innovation-studio@innovationstudio.iam.gserviceaccount.com",
-            "client_id": "103602022291355277889",
-            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-            "token_uri": "https://oauth2.googleapis.com/token",
-            "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-            "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/innovation-studio@innovationstudio.iam.gserviceaccount.com",
-            "universe_domain": "googleapis.com"
-        }
 
         # Create credentials using the dictionary
         credentials = Credentials.from_service_account_info(
