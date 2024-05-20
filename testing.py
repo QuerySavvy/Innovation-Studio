@@ -280,7 +280,8 @@ if not session_state['object'] == None:
             st.warning("Please enter a value in every field.")
 
         if selected_suburb and selected_street and selected_number:
-            geolocate(country, state, selected_suburb, selected_street, selected_number)
+            try:
+                geolocate(country, state, selected_suburb, selected_street, selected_number)
             session_state['address'] = selected_number + ', ' + selected_street + ', ' + selected_suburb
             session_state['form'] = 'ready'
 
