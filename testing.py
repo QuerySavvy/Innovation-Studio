@@ -320,7 +320,7 @@ with st.container(border=True):
         st.success('Geolocation OK')
         st.write(address_raw)
 
-    except:
+    except Exception as e:
         st.error(f"Geolocation NOT OK. \n\nError Message: {e}")
 
     st.info('Session State Information')
