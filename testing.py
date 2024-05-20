@@ -87,7 +87,7 @@ def get_nominatim_coordinates(country, state, city, road, number):
 
         return nominatim_lat, nominatim_long, nominatim_coordinates
     except Exception as e:
-        st.error("error with the generate_coordinates function \n\nError Message: {e}")     
+        st.error(f"error with the generate_coordinates function \n\nError Message: {e}")     
 
 def generate_map(lat,long):
     try:
