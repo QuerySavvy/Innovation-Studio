@@ -52,7 +52,7 @@ def loadlocationdata():
 def geolocate(country, state, city, road, number):
     try:
     # Get location info using geopy
-        geolocator = Nominatim(user_agent="UTS_APP",timeout = 10)
+        geolocator = Nominatim(user_agent="UTS_Application",timeout = 10)
 
         #check to see if locate_me function is being used
         if 'locate_me' not in session_state:
@@ -315,7 +315,7 @@ with st.container(border=True):
             latitude = loc['coords']['latitude']
             longitude = loc['coords']['longitude']
             coordinates = (latitude, longitude)
-            geolocator = Nominatim(user_agent="UTS_APP",timeout = 10)
+            geolocator = Nominatim(user_agent="UTS_Application",timeout = 10)
             location = geolocator.reverse(coordinates)
             address_raw = location.raw['address']
     #used for testing
