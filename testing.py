@@ -56,7 +56,7 @@ def geolocate(country, state, city, road, number):
         geolocator = Nominatim(user_agent="UTS_Application",timeout = 10)
 
         #check to see if locate_me function is being used
-        if 'locate_me' not in session_state:
+        if session_state['locate_me'] == True:
             state = "NSW"
             country = "Australia"
 
@@ -189,6 +189,7 @@ if 'image uploaded' not in session_state:
     session_state['object'] = None
     session_state['address'] = None
     session_state['form'] = None
+    session_state['locate_me'] = None
 
 #Run the geolocation engine
 loc = None
