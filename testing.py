@@ -282,6 +282,8 @@ if not session_state['object'] == None:
         if selected_suburb and selected_street and selected_number:
             try:
                 geolocate(country, state, selected_suburb, selected_street, selected_number)
+            except:
+                None
             session_state['address'] = selected_number + ', ' + selected_street + ', ' + selected_suburb
             session_state['form'] = 'ready'
 
