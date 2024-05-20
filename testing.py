@@ -307,17 +307,6 @@ if session_state['form'] == 'submitted':
 # ------------------------------------------------------------------------------------------------   New feature testing
 
 
-def reverse_geocode_with_retry(lat, lon, max_retries=5):
-    geolocator = Nominatim(user_agent="your_custom_app_name", timeout=10)
-    for attempt in range(max_retries):
-        try:
-            return geolocator.reverse((lat, lon), exactly_one=True)
-        except Exception as e:
-            st.warning(f"Error: {e}. Retrying... ({attempt + 1}/{max_retries})")
-            time.sleep(2)  # wait a bit before retrying
-    return None
-
-
 #Testing only
 with st.container(border=True):
     st.subheader("Backend Code information")
@@ -325,7 +314,9 @@ with st.container(border=True):
         if loc is not None:
             latitude = loc['coords']['latitude']
             longitude = loc['coords']['longitude']
-            location = reverse_geocode_with_retry(latitude, longitude, max_retries=5)
+            coordinates = (latitude, longitude)
+            geolocator = Nominatim(user_agent="UTS_APP",timeout = 10)
+            location = geolocator.reverse(coordinates)
             address_raw = location.raw['address']
     #used for testing
         st.success('Geolocation OK')
