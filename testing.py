@@ -190,6 +190,8 @@ if 'image uploaded' not in session_state:
     session_state['address'] = None
     session_state['form'] = None
     session_state['locate_me'] = None
+    session_state['latitude'] = None
+    session_state['longitude'] = None
 
 #Run the geolocation engine
 loc = None
