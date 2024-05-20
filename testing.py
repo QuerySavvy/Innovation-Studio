@@ -50,7 +50,7 @@ def loadlocationdata():
 def geolocate(country, state, city, road, number):
     try:
     # Get location info using geopy
-        geolocator = Nominatim(user_agent="UTS_APP")
+        geolocator = Nominatim(user_agent="UTS_APP",timeout = 10)
 
         #check to see if locate_me function is being used
         if 'locate_me' not in session_state:
