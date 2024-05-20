@@ -312,7 +312,7 @@ with st.container(border=True):
             latitude = loc['coords']['latitude']
             longitude = loc['coords']['longitude']
             coordinates = (latitude, longitude)
-            geolocator = Nominatim(user_agent="UTS_APP")
+            geolocator = Nominatim(user_agent="UTS_APP",timeout = 10)
             location = geolocator.reverse(coordinates)
             address_raw = location.raw['address']
     #used for testing
