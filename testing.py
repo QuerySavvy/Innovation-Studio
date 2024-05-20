@@ -182,6 +182,7 @@ if 'image uploaded' not in session_state:
     session_state['object'] = None
     session_state['address'] = None
     session_state['form'] = None
+    session_state['locate_me'] = None
 #Run the geolocation engine
 loc = None
 loc = get_geolocation()
@@ -239,14 +240,14 @@ if not session_state['object'] == None:
         st.subheader("Please enter the rubbish location ")
         if st.button(":round_pushpin: Locate Me "):
             session_state['locate_me'] = True
-        if 'locate_me' in session_state:
+        if session_state['locate_me'] == True:
             try:
                 country, state, city, road, number = locate_me()
                 suburbs.insert(0, city)
             except:
                 st.warning('Geolocation service currently unavailable', icon="⚠️")
                 session_state['locate_me'] = False
-        else:
+        if session_state['locate_me'] == False:
             country = "Australia"
             state = "NSW"
         selected_suburb = st.selectbox("Suburb", suburbs, index=0 if session_state['locate_me'] == True else None, placeholder="Select a Suburb . . .",)
