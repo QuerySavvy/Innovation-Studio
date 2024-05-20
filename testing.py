@@ -321,7 +321,7 @@ with st.container(border=True):
         st.write(address_raw)
 
     except:
-    st.error(f"Geolocation NOT OK. \n\nError Message: {e}")
+        st.error(f"Geolocation NOT OK. \n\nError Message: {e}")
 
     st.info('Session State Information')
     session_state
