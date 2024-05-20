@@ -11,6 +11,7 @@ import requests
 from io import BytesIO
 import gspread
 from google.oauth2.service_account import Credentials
+import time
 
 # initialize the client
 CLIENT = InferenceHTTPClient(
