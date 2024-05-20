@@ -257,8 +257,11 @@ if not session_state['object'] == None:
         if selected_suburb and (not selected_street or not selected_number):
             st.warning("Please enter a value in every field.")
         if selected_suburb and selected_street and selected_number:
-            nominatim_lat, nominatim_long, nominatim_coordinates = get_nominatim_coordinates(country, state, selected_suburb, selected_street, selected_number)
-            generate_map(nominatim_lat,nominatim_long)
+            try:
+                nominatim_lat, nominatim_long, nominatim_coordinates = get_nominatim_coordinates(country, state, selected_suburb, selected_street, selected_number)
+                generate_map(nominatim_lat,nominatim_long)
+            except:
+                st.warning('get_nominatim_coordinates() and generate_map() currently unavailable', icon="⚠️")
 
             session_state['address'] = selected_number + ', ' + selected_street + ', ' + selected_suburb
             session_state['form'] = 'ready'
