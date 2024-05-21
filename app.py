@@ -36,9 +36,6 @@ credentials_dict = {
 }
 
 
-#testing title
-st.title("*** ***TESTING PAGE*** ***")
-
 # --------------------------------     Copy/Paste code below this line     --------------------------------
 
 # Function to perform inference on uploaded image
@@ -186,8 +183,7 @@ if 'image uploaded' not in session_state:
 #Run the geolocation engine
 loc = None
 loc = get_geolocation()
-with st.expander('Click to find out more'):
-        st.write("bla bla bla bla. do we wanna add some bla bla here?")
+
 #Create the container for the image section 
 with st.container(border=True):
     #Photo subheader
