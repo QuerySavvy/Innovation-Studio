@@ -206,6 +206,7 @@ st.title("Curbside rubbish reporting app")
 session_state = st.session_state
 user_df = read_users()
 
+
 #login screen
 if 'login_status' not in session_state:
     with st.container(border=True):
