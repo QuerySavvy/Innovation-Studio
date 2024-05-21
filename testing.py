@@ -82,7 +82,7 @@ def get_nominatim_coordinates(country, state, city, road, number):
             address = geo_location.address
             if "house_number" not in geo_location.raw['address']:
                 address = selected_number + ", " + address
-                st.info('Unable to find exact location on our server, however our address details have been saved.', icon="⚠️")
+                st.info('Unable to find exact location on our server, however your address details have been saved.', icon="⚠️")
             st.write("Full Address:", address)
 
         return nominatim_lat, nominatim_long, nominatim_coordinates
@@ -155,6 +155,21 @@ def initialise_sheets():
     users_next_row = len(users.col_values(1)) + 1
     return data, users, data_next_row, users_next_row
 
+@st.cache_data
+def read_users():
+    with st.spinner('loading . . . .'):
+        # Create credentials using the dictionary
+        credentials = Credentials.from_service_account_info(
+            credentials_dict,
+            scopes=["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
+        )
+        # Authorize and initialize the gspread client
+        client = gspread.authorize(credentials)
+        workbook = client.open('Sydney_log')
+        worksheet = workbook.worksheet('users')
+        data = worksheet.get_all_records()
+        df = pd.DataFrame(data)
+    return df
 
 def send_sheets_data(data, data_next_row, Address, Latitude, Longitude, type_of_rubbish, user_IP, image_location):
     #create the data frame
@@ -171,13 +186,63 @@ def send_sheets_data(data, data_next_row, Address, Latitude, Longitude, type_of_
     next_row = len(data.col_values(1)) + 1
     # Insert data into the first blank row without headers
     data.insert_row(data_df.values[0].tolist(), next_row)
+
+def login(username, password, data):
+    user_data = data[data['user_name'] == username]  # Filter data for the given username
+    if not user_data.empty:
+        if user_data['user_password'].iloc[0] == password:
+            st.write("authenticate")
+            session_state['login_status'] = "Logged In"
+            st.rerun()
+        else:
+            st.write("incorrect password")
+    else:
+        st.write("username not found")
+
+
 # ----------------------------------------------------------------     Streamlit app     ----------------------------------------------------------------
 st.title("Curbside rubbish reporting app")
 # Define a SessionState object
 session_state = st.session_state
+user_df = read_users()
+
+#login screen
+if 'login_status' not in session_state:
+    with st.container(border=True):
+        #Login Screen
+        st.subheader("Welcome to our Curbside rubbish reporting app")
+        st.write("How would you like to continue:")
+        screen1_1, screen1_2, screen1_3 = st.columns(3)
+        with screen1_1:
+            with st.popover("Sign In"):
+                username = st.text_input("Enter your username")
+                password = st.text_input("Enter your password")
+                login_button = st.button("Sign In")
+                if login_button:
+                    login(username,password,user_df)
+        with screen1_2:
+            with st.popover("Create Account",disabled=True):
+                username = st.text_input("Enter a username")
+                password = st.text_input("Enter a password")
+                sign_up = st.button("Create Account")
+        with screen1_3:
+            guest = st.button("Continue as guest")
+
+        if guest:
+            if "login_status" not in session_state:
+                session_state['login_status'] = "guest"
+                st.rerun()
+            elif session_state['login_status'] != "guest":
+                session_state['login_status'] = "guest"
+                st.rerun()           
+    st.stop()
+
+
+
+    
 # Initialise the session state variables before the user uploads an image
 if 'image uploaded' not in session_state:
-    session_state['image uploaded'] = None
+    session_state['image uploaded'] = None 
     session_state['classification'] = None
     session_state['object'] = None
     session_state['address'] = None
@@ -186,12 +251,14 @@ if 'image uploaded' not in session_state:
 #Run the geolocation engine
 loc = None
 loc = get_geolocation()
+time.sleep(0.5)
+
 with st.expander('Click to find out more'):
         st.write("bla bla bla bla. do we wanna add some bla bla here?")
 #Create the container for the image section 
 with st.container(border=True):
     #Photo subheader
-    st.subheader("Please take a photo or or upload an image to start")
+    st.subheader("Please take a photo or or upload an image")
     # Allow user to upload an image type=["jpg", "jpeg"]
     uploaded_image = st.file_uploader("Choose an image...", type=["jpg", "jpeg"])
     if uploaded_image is not None:
@@ -295,11 +362,12 @@ with st.container(border=True):
             geolocator = Nominatim(user_agent="UTS_APP")
             location = geolocator.reverse(coordinates)
             address_raw = location.raw['address']
-        st.success('Geolocation OK')
+            st.success('Geolocation OK')
     #used for testing
         st.write(address_raw)
-    except:
-        st.error('Geolocation NOT OK')
+    except Exception as e:
+        st.error(f'Geolocation NOT OK {e}')
     st.info('Session State Information')
     session_state
-# ------------------------------------------------------------------------------------------------   New feature testing
+
+    st.sidebar.write(session_state)
