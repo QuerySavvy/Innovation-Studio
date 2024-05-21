@@ -371,5 +371,3 @@ with st.sidebar:
             st.error(f'Geolocation NOT OK {e}')
         st.info('Session State Information')
         session_state
-
-    st.sidebar.write(session_state)
