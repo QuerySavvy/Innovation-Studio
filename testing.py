@@ -130,7 +130,7 @@ def thank_you_page():
     response = requests.get(url)
     image = Image.open(BytesIO(response.content))
     with st.container(border=True):
-        congrats_col1, congrats_col2, congrats_col3 = st.columns([2,6,2])
+        congrats_col1, congrats_col2, congrats_col3 = st.columns([3,4,3])
         with congrats_col2:
             st.header("Congrations !")
             st.image(image)
