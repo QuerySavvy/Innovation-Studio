@@ -278,3 +278,17 @@ if session_state['form'] == 'submitted':
         data, users, data_next_row, users_next_row = initialise_sheets()
         send_sheets_data(data, data_next_row, session_state['address'], session_state['latitude'], session_state['longitude'], session_state['object'], "tbc", "tbc")
     thank_you_page()
+
+with st.container(border=True):
+    st.write("App Health Checks")
+    try:
+        if loc is not None:
+            latitude = loc['coords']['latitude']
+            longitude = loc['coords']['longitude']
+            coordinates = (latitude, longitude)
+            geolocator = Nominatim(user_agent="UTS_APP")
+            location = geolocator.reverse(coordinates)
+            address_raw = location.raw['address']
+        st.success('Geolocation OK')
+    except:
+        st.error('Geolocation NOT OK')
