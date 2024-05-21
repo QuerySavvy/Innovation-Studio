@@ -353,22 +353,23 @@ if session_state['form'] == 'submitted':
 # --------------------------------     Streamlit app - end     --------------------------------
 # ------------------------------------------------------------------------------------------------   New feature testing
 #Testing only
-with st.container(border=True):
-    st.subheader("Backend Code information")
-    try:
-        if loc is not None:
-            latitude = loc['coords']['latitude']
-            longitude = loc['coords']['longitude']
-            coordinates = (latitude, longitude)
-            geolocator = Nominatim(user_agent="UTS_APP")
-            location = geolocator.reverse(coordinates)
-            address_raw = location.raw['address']
-            st.success('Geolocation OK')
-    #used for testing
-        st.write(address_raw)
-    except Exception as e:
-        st.error(f'Geolocation NOT OK {e}')
-    st.info('Session State Information')
-    session_state
+with st.sidebar:
+    with st.container(border=True):
+        st.subheader("Backend Code information")
+        try:
+            if loc is not None:
+                latitude = loc['coords']['latitude']
+                longitude = loc['coords']['longitude']
+                coordinates = (latitude, longitude)
+                geolocator = Nominatim(user_agent="UTS_APP")
+                location = geolocator.reverse(coordinates)
+                address_raw = location.raw['address']
+                st.success('Geolocation OK')
+        #used for testing
+            st.write(address_raw)
+        except Exception as e:
+            st.error(f'Geolocation NOT OK {e}')
+        st.info('Session State Information')
+        session_state
 
     st.sidebar.write(session_state)
