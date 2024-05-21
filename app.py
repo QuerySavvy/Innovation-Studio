@@ -3,9 +3,17 @@ from inference_sdk import InferenceHTTPClient
 from PIL import Image, ImageOps
 import pandas as pd
 import folium
-from streamlit_folium import st_folium
 from geopy.geocoders import Nominatim
+from streamlit_folium import st_folium
 from streamlit_js_eval import get_geolocation
+from datetime import date
+import requests
+from io import BytesIO
+import gspread
+from google.oauth2.service_account import Credentials
+import time
+
+
 # initialize the client
 CLIENT = InferenceHTTPClient(
     api_url="https://detect.roboflow.com",
@@ -37,36 +45,44 @@ def loadlocationdata():
     suburbs.sort()
     return suburbs
 
-
-def geolocate(country, state, city, road, number):
+@st.cache_data
+def get_nominatim_coordinates(country, state, city, road, number):
     try:
     # Get location info using geopy
         geolocator = Nominatim(user_agent="UTS_APP")
-
         #check to see if locate_me function is being used
         if 'locate_me' not in session_state:
             state = "NSW"
             country = "Australia"
-
         if selected_number:
             geo_location = geolocator.geocode(selected_number +" "+selected_street +" "+ selected_suburb+", "+ state +", "+country,addressdetails=True)
-            coordinates = (geo_location.latitude, geo_location.longitude)
-            map = folium.Map(location=coordinates, zoom_start=17)
-            folium.Marker([geo_location.latitude, geo_location.longitude]).add_to(map)
+            nominatim_coordinates = (geo_location.latitude, geo_location.longitude)
+            nominatim_lat = geo_location.latitude
+            nominatim_long = geo_location.longitude
+            session_state['latitude'] = geo_location.latitude
+            session_state['longitude'] = geo_location.longitude
+            address = geo_location.address
+            if "house_number" not in geo_location.raw['address']:
+                address = selected_number + ", " + address
+                st.info('Unable to find exact location on our server, however our address details have been saved.', icon="⚠️")
+            st.write("Full Address:", address)
 
-        # Display location address and coordinates
-        address = geo_location.address
-        if "house_number" not in geo_location.raw['address']:
-            address = selected_number + ", " + address
-            st.info('Unable to find exact location on map. Your address has been saved.', icon="⚠️")
-        st.write("Full Address:", address)
-            
-            # Display map
-        return st_folium(map, height=400)
+        return nominatim_lat, nominatim_long, nominatim_coordinates
     except Exception as e:
-        st.error(f"Map currently unavailable. Please double check the address. \n\nError Message: {e}")
+        st.error(f"error with the generate_coordinates function \n\nError Message: {e}")     
+
+def generate_map(lat,long):
+    try:
+        map = folium.Map(location=(lat,long), zoom_start=17)
+        folium.Marker([lat,long]).add_to(map)       
+        # Display map
+        return st_folium(map, height=300)
+    except Exception as e:
+        st.error(f"Map currently unavailable. \n\nError Message: {e}")
+
 
 # Geolocation function
+@st.cache_data
 def locate_me():
     latitude = loc['coords']['latitude']
     longitude = loc['coords']['longitude']
@@ -74,14 +90,11 @@ def locate_me():
     geolocator = Nominatim(user_agent="UTS_APP")
     location = geolocator.reverse(coordinates)
     address_raw = location.raw['address']
-
     country = address_raw['country']
     state = address_raw['state']
     road = address_raw['road']
-
     # Define a list of potential fields for the city or suburb field
     city_field = ['city', 'suburb', 'town', 'village']
-
     # Iterate over the potential field names and retrieve the value if it exists
     city = None
     for key in city_field:
@@ -94,73 +107,89 @@ def locate_me():
     
     return country, state, city, road, number
 
+def thank_you_page():
+    url = 'https://github.com/QuerySavvy/Innovation-Studio/blob/main/pngtree-goldan-3d-star-emoji-icon-png-image_10459560.png?raw=true'
+    response = requests.get(url)
+    image = Image.open(BytesIO(response.content))
+    with st.container(border=True):
+        congrats_col1, congrats_col2, congrats_col3 = st.columns([2,6,2])
+        with congrats_col2:
+            st.header("Congrations !")
+            st.image(image)
+            st.subheader("You earned 10 points")
+
+
+def initialise_sheets():
+    with st.spinner('loading . . . .'):
+        # Create credentials using the dictionary
+        credentials = Credentials.from_service_account_info(
+            credentials_dict,
+            scopes=["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
+        )
+        # Authorize and initialize the gspread client
+        client = gspread.authorize(credentials)
+        # Open the Google Sheet by its name
+        workbook = client.open("Sydney_log")
+        data = workbook.get_worksheet(0)  # First sheet
+        users = workbook.get_worksheet(1)  # Second sheet
+    # Find the first blank row in the sheet
+    data_next_row = len(data.col_values(1)) + 1
+    users_next_row = len(users.col_values(1)) + 1
+    return data, users, data_next_row, users_next_row
+
+
+def send_sheets_data(data, data_next_row, Address, Latitude, Longitude, type_of_rubbish, user_IP, image_location):
+    #create the data frame
+    data_df = pd.DataFrame({
+    'Column1': [Address],
+    'Column2': [Latitude],
+    'Column3': [Longitude],
+    'Column4': [type_of_rubbish],
+    'Column5': [user_IP],
+    'Column6': [str(date.today())],
+    'Column7': ['Null']
+    })
+    # Find the first blank row in the sheet
+    next_row = len(data.col_values(1)) + 1
+    # Insert data into the first blank row without headers
+    data.insert_row(data_df.values[0].tolist(), next_row)
 # ----------------------------------------------------------------     Streamlit app     ----------------------------------------------------------------
 st.title("Curbside rubbish reporting app")
-
 # Define a SessionState object
 session_state = st.session_state
-
+# Initialise the session state variables before the user uploads an image
+if 'image uploaded' not in session_state:
+    session_state['image uploaded'] = None
+    session_state['classification'] = None
+    session_state['object'] = None
+    session_state['address'] = None
+    session_state['form'] = None
+    session_state['locate_me'] = None
 #Run the geolocation engine
 loc = None
 loc = get_geolocation()
-
-#Photo subheader
-st.subheader("Please take a photo or upload an image")
-
-# Define a SessionState object
-session_state = st.session_state
-if 'image uploaded' not in session_state:
-    session_state['image uploaded'] = None
-
-# Allow user to upload an image type=["jpg", "jpeg"]
-uploaded_image = st.file_uploader("Choose an image...", type=["jpg", "jpeg"])
-if uploaded_image is not None:
-    # Display the uploaded image
-    image = Image.open(uploaded_image)
-    image = ImageOps.exif_transpose(image)
-
-# Perform inference if an image is uploaded and the function has not been run yet or if a new image is uploaded
-if uploaded_image is not None and session_state['image uploaded'] !=  uploaded_image.name + str(uploaded_image.size):
-    # Run the rubbish_detector function
-    detected_object, confidence = rubbish_detector(image)
-    session_state['detected_object'] = detected_object
-    session_state['confidence'] = confidence
-    session_state['image uploaded'] = uploaded_image.name + str(uploaded_image.size)
-
-# Load location data
-suburbs = loadlocationdata()
-
-# Allow user to select their location
+with st.expander('Click to find out more'):
+        st.write("bla bla bla bla. do we wanna add some bla bla here?")
+#Create the container for the image section 
 with st.container(border=True):
-    st.subheader("Please enter the rubbish location ")
-
-    if st.button(":round_pushpin: Locate Me "):
-        session_state['locate_me'] = True
-
-    if 'locate_me' in session_state:
-        try:
-            country, state, city, road, number = locate_me()
-            suburbs.insert(0, city)
-        except:
-            st.warning('Geolocation service currently unavailable', icon="⚠️")
-    else:
-        country = "Australia"
-        state = "NSW"
-
-    selected_suburb = st.selectbox("Suburb", suburbs, index=0 if 'locate_me' in session_state else None, placeholder="Select a Suburb . . .",)
-    col1, col2 = st.columns(2)
-    selected_street = col1.text_input("Street Name", value=road if 'locate_me' in session_state else "", placeholder="Enter a Street Name . . .   e.g. Smith Street")
-    selected_number = col2.text_input("Street Number", value=number if 'locate_me' in session_state else "",placeholder="Enter your street number")
-
-    if selected_suburb and (not selected_street or not selected_number):
-        st.warning("Please enter a value in every field.")
-
-    if selected_suburb and selected_street and selected_number:
-        geolocate(country, state, selected_suburb, selected_street, selected_number)
-
-# Display inference results if available
-if 'detected_object' in session_state:
-    with st.container(border=True):
+    #Photo subheader
+    st.subheader("Please take a photo or or upload an image to start")
+    # Allow user to upload an image type=["jpg", "jpeg"]
+    uploaded_image = st.file_uploader("Choose an image...", type=["jpg", "jpeg"])
+    if uploaded_image is not None:
+        # Display the uploaded image
+        image = Image.open(uploaded_image)
+        image = ImageOps.exif_transpose(image)
+        st.write(image)
+    # Perform inference if an image is uploaded and the function has not been run yet or if a new image is uploaded
+    if uploaded_image is not None and session_state['image uploaded'] !=  uploaded_image.name + str(uploaded_image.size):
+        # Run the rubbish_detector function
+        detected_object, confidence = rubbish_detector(image)
+        session_state['detected_object'] = detected_object
+        session_state['confidence'] = confidence
+        session_state['image uploaded'] = uploaded_image.name + str(uploaded_image.size)
+    # Display inference results if available
+    if 'detected_object' in session_state:
         string = f"Image matched with {session_state['confidence']} confidence."
         st.info(string, icon="ℹ️")
         st.write("The photo submitted looks like a ", session_state['detected_object'], " is that right?")
@@ -168,8 +197,70 @@ if 'detected_object' in session_state:
         button_yes = col_1.button("Yes")
         button_no = col_2.button("No")
         if button_yes:
+            session_state['classification'] = True
             st.balloons()
         if button_no:
-            st.snow()
-# ----------------------------------------------------------------     Streamlit app - end     --------------------------------
+            session_state['classification'] = False
+        
+        if session_state['classification'] == True:
+            session_state['object'] = session_state['detected_object']
+            st.success("⬇️ Enter location information ⬇️")
+        if session_state['classification'] == False:
+            junk = st.radio(
+            "What is it ?",
+            ['mattress', 'milk crate', 'bicycle', 'couch', 'construction waste', 'car', 'rubbish', 'tyres', 'shopping trolley', 'fridge'],
+            index=None,)
+            session_state['object'] = junk
+            if not junk == None:
+                st.write("You selected:", junk) 
+                st.success("⬇️ Enter location information ⬇️")
+# Load location data
+suburbs = loadlocationdata()
+# Create container for location section
+if not session_state['object'] == None:
+    with st.container(border=True):
+        st.subheader("Please enter the rubbish location ")
+        if st.button(":round_pushpin: Locate Me "):
+            session_state['locate_me'] = True
+        if session_state['locate_me'] == True:
+            try:
+                country, state, city, road, number = locate_me()
+                suburbs.insert(0, city)
+            except:
+                st.warning('Geolocation service currently unavailable', icon="⚠️")
+                session_state['locate_me'] = False
+        if session_state['locate_me'] == False:
+            country = "Australia"
+            state = "NSW"
+        selected_suburb = st.selectbox("Suburb", suburbs, index=0 if session_state['locate_me'] == True else None, placeholder="Select a Suburb . . .",)
+        col1, col2 = st.columns(2)
+        selected_street = col1.text_input("Street Name", value=road if session_state['locate_me'] == True else "", placeholder="Enter a Street Name . . .   e.g. Smith Street")
+        selected_number = col2.text_input("Street Number", value=number if session_state['locate_me'] == True else "",placeholder="Enter your street number")
+        if selected_suburb and (not selected_street or not selected_number):
+            st.warning("Please enter a value in every field.")
+        if selected_suburb and selected_street and selected_number:
+            try:
+                nominatim_lat, nominatim_long, nominatim_coordinates = get_nominatim_coordinates(country, state, selected_suburb, selected_street, selected_number)
+                generate_map(nominatim_lat,nominatim_long)
+            except:
+                st.warning('get_nominatim_coordinates() and generate_map() currently unavailable', icon="⚠️")
 
+            session_state['address'] = selected_number + ', ' + selected_street + ', ' + selected_suburb
+            session_state['form'] = 'ready'
+# the form to submit the information
+if session_state['form'] == 'ready':
+    with st.container(border=True):
+        st.subheader("Submit your report")
+        with st.container(border=True):
+            st.text("Rubish type: " + session_state['object'] + "\n"
+                    "Address: " + session_state['address'] + "\n"
+                    "Report Date: " + str(date.today()))
+        if st.button('Submit to '+selected_suburb + ' council 📨'):
+            session_state['form'] = 'submitted'
+            st.text("Thank you for your submission")
+if session_state['form'] == 'submitted':
+    st.balloons()
+    with st.spinner('Loading. . . .'):
+        data, users, data_next_row, users_next_row = initialise_sheets()
+        send_sheets_data(data, data_next_row, session_state['address'], session_state['latitude'], session_state['longitude'], session_state['object'], "tbc", "tbc")
+    thank_you_page()
