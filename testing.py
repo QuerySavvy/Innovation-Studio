@@ -13,7 +13,6 @@ import gspread
 from google.oauth2.service_account import Credentials
 import time
 
-
 # initialize the roboflow client
 CLIENT = InferenceHTTPClient(
     api_url="https://detect.roboflow.com",
