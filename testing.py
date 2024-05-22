@@ -63,7 +63,6 @@ def loadlocationdata():
     suburbs.sort()
     return suburbs
 
-@st.cache_data
 def get_nominatim_coordinates(country, state, city, road, number):
     try:
     # Get location info using geopy
@@ -100,7 +99,6 @@ def generate_map(lat,long):
 
 
 # Geolocation function
-@st.cache_data
 def locate_me():
     latitude = loc['coords']['latitude']
     longitude = loc['coords']['longitude']
