@@ -198,7 +198,6 @@ def create_user(username, password, users):
         session_state['user_name'] = username
         session_state['user_row_number'] = next_row
         session_state['user_points'] = 0
-        time.sleep(3)
         st.rerun()
 
     else:
