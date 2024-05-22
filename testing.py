@@ -191,15 +191,15 @@ def initialise_sheets():
 def create_user(username, password, users):
     if username not in users.col_values(2):
         next_row = len(users.col_values(1)) + 1
-        userid = "User"+str(next_row-1)
+        userid = "User"+str(next_row)
         users.insert_row([userid,username,password,0],next_row)
         st.success("User Created")
-        time.sleep(1)
-
         session_state['user_login_status'] = "Logged In"
         session_state['user_name'] = username
         session_state['user_row_number'] = next_row
         session_state['user_points'] = 0
+        time.sleep(3)
+        st.rerun()
 
     else:
         st.warning("username already exists")
