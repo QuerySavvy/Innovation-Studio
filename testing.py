@@ -162,14 +162,15 @@ def login(username, password, worksheet):
                 session_state['user_name'] = username
                 session_state['user_row_number'] = row_number
                 session_state['user_points'] = user_data['user_points']
+                st.success("Authenticated")
                 st.write("✨ Welcome "+username+" ✨")
                 st.write("You currently have "+ str(user_data['user_points']) +" points.")
                 time.sleep(5)
                 st.rerun()
             else:
-                st.write("Incorrect password")
+                st.warning("Incorrect password")
         else:
-            st.write("Username not found")
+            st.warning("Username not found")
 
 def initialise_sheets():
     with st.spinner('Connecting to database . . . .'):
@@ -192,9 +193,16 @@ def create_user(username, password, users):
         next_row = len(users.col_values(1)) + 1
         userid = "User"+str(next_row)
         users.insert_row([userid,username,password,0],next_row)
-        st.write("User Created")
+        st.success("User Created")
+        time.sleep(1)
+
+        session_state['user_login_status'] = "Logged In"
+        session_state['user_name'] = username
+        session_state['user_row_number'] = next_row
+        session_state['user_points'] = 0
+
     else:
-        st.write("username already exists")
+        st.warning("username already exists")
 
 def send_sheets_data(data, Address, Latitude, Longitude, type_of_rubbish, user_IP):
     #create the data frame
@@ -255,8 +263,6 @@ if 'user_login_status' not in session_state:
     st.stop()
 
 
-
-    
 # Initialise the session state variables before the user uploads an image
 if 'image uploaded' not in session_state:
     session_state['image uploaded'] = None 
