@@ -127,16 +127,53 @@ def thank_you_page():
     url = 'https://github.com/QuerySavvy/Innovation-Studio/blob/main/pngtree-goldan-3d-star-emoji-icon-png-image_10459560.png?raw=true'
     response = requests.get(url)
     image = Image.open(BytesIO(response.content))
+    newpoints = session_state["user_points"] + 10
     with st.container(border=True):
+        st.header("Congrations " + session_state['user_name'] + "!")
+        st.subheader("You now have a total of "+ str(newpoints)+" points")
+
         congrats_col1, congrats_col2, congrats_col3 = st.columns([3,4,3])
         with congrats_col2:
-            st.header("Congrations !")
             st.image(image)
-            st.subheader("You earned 10 points")
+            st.subheader("You earned 10 points\n\n")
 
+    #Need to add function to write the points to the user account
+
+def please_sign_up():
+    with st.container(border=True):
+        st.header("Don't forget to sign up next time")
+        st.subheader("Earn points and redeem for vouchers 🤑 ")
+
+def login(username, password, worksheet):
+    with st.spinner('Authenticating . . . .'):
+        # Filter data for the given username
+        records = worksheet.get_all_records()
+        user_data = None
+        row_number = None
+
+        for index, record in enumerate(records):
+            if record['user_name'] == username:
+                user_data = record
+                row_number = index + 2  # +2 to account for header row and zero-based index
+                break
+
+        if user_data:
+            if user_data['user_password'] == password:
+                session_state['user_login_status'] = "Logged In"
+                session_state['user_name'] = username
+                session_state['user_row_number'] = row_number
+                session_state['user_points'] = user_data['user_points']
+                st.write("✨ Welcome "+username+" ✨")
+                st.write("You currently have "+ str(user_data['user_points']) +" points.")
+                time.sleep(5)
+                st.rerun()
+            else:
+                st.write("Incorrect password")
+        else:
+            st.write("Username not found")
 
 def initialise_sheets():
-    with st.spinner('loading . . . .'):
+    with st.spinner('Connecting to database . . . .'):
         # Create credentials using the dictionary
         credentials = Credentials.from_service_account_info(
             credentials_dict,
@@ -148,28 +185,19 @@ def initialise_sheets():
         workbook = client.open("Sydney_log")
         data = workbook.get_worksheet(0)  # First sheet
         users = workbook.get_worksheet(1)  # Second sheet
-    # Find the first blank row in the sheet
-    data_next_row = len(data.col_values(1)) + 1
-    users_next_row = len(users.col_values(1)) + 1
-    return data, users, data_next_row, users_next_row
+        # Find the first blank row in the sheet
+    return data, users
 
-@st.cache_data
-def read_users():
-    with st.spinner('loading . . . .'):
-        # Create credentials using the dictionary
-        credentials = Credentials.from_service_account_info(
-            credentials_dict,
-            scopes=["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"]
-        )
-        # Authorize and initialize the gspread client
-        client = gspread.authorize(credentials)
-        workbook = client.open('Sydney_log')
-        worksheet = workbook.worksheet('users')
-        data = worksheet.get_all_records()
-        df = pd.DataFrame(data)
-    return df
+def create_user(username, password, users):
+    if username not in users.col_values(2):
+        next_row = len(users.col_values(1)) + 1
+        userid = "User"+str(next_row)
+        users.insert_row([userid,username,password,0],next_row)
+        st.write("User Created")
+    else:
+        st.write("username already exists")
 
-def send_sheets_data(data, data_next_row, Address, Latitude, Longitude, type_of_rubbish, user_IP, image_location):
+def send_sheets_data(data, Address, Latitude, Longitude, type_of_rubbish, user_IP):
     #create the data frame
     data_df = pd.DataFrame({
     'Column1': [Address],
@@ -185,28 +213,15 @@ def send_sheets_data(data, data_next_row, Address, Latitude, Longitude, type_of_
     # Insert data into the first blank row without headers
     data.insert_row(data_df.values[0].tolist(), next_row)
 
-def login(username, password, data):
-    user_data = data[data['user_name'] == username]  # Filter data for the given username
-    if not user_data.empty:
-        if user_data['user_password'].iloc[0] == password:
-            st.write("authenticate")
-            session_state['login_status'] = "Logged In"
-            st.rerun()
-        else:
-            st.write("incorrect password")
-    else:
-        st.write("username not found")
-
 
 # ----------------------------------------------------------------     Streamlit app     ----------------------------------------------------------------
 st.title("Curbside rubbish reporting app")
 # Define a SessionState object
 session_state = st.session_state
-user_df = read_users()
 
 
 #login screen
-if 'login_status' not in session_state:
+if 'user_login_status' not in session_state:
     with st.container(border=True):
         #Login Screen
         st.subheader("Welcome to our Curbside rubbish reporting app")
@@ -218,21 +233,25 @@ if 'login_status' not in session_state:
                 password = st.text_input("Enter your password")
                 login_button = st.button("Sign In")
                 if login_button:
-                    login(username,password,user_df)
+                    data, users = initialise_sheets()
+                    login(username,password,users)
         with screen1_2:
-            with st.popover("Create Account",disabled=True):
+            with st.popover("Create Account"):
                 username = st.text_input("Enter a username")
                 password = st.text_input("Enter a password")
-                sign_up = st.button("Create Account")
+                sign_up_button = st.button("Create Account")
+                if(sign_up_button):
+                    data, users = initialise_sheets()
+                    create_user(username, password, users)
         with screen1_3:
             guest = st.button("Continue as guest")
 
         if guest:
-            if "login_status" not in session_state:
-                session_state['login_status'] = "guest"
+            if "user_login_status" not in session_state:
+                session_state['user_login_status'] = "guest"
                 st.rerun()
-            elif session_state['login_status'] != "guest":
-                session_state['login_status'] = "guest"
+            elif session_state['user_login_status'] != "guest":
+                session_state['user_login_status'] = "guest"
                 st.rerun()           
     st.stop()
 
@@ -344,10 +363,14 @@ if session_state['form'] == 'ready':
             st.text("Thank you for your submission")
 if session_state['form'] == 'submitted':
     st.balloons()
-    with st.spinner('Loading. . . .'):
-        data, users, data_next_row, users_next_row = initialise_sheets()
-        send_sheets_data(data, data_next_row, session_state['address'], session_state['latitude'], session_state['longitude'], session_state['object'], "tbc", "tbc")
-    thank_you_page()
+    if session_state['user_login_status'] == "guest":
+        please_sign_up()
+
+    else:
+        thank_you_page()
+        data, users = initialise_sheets()
+        send_sheets_data(data, session_state['address'], session_state['latitude'], session_state['longitude'], session_state['object'], "tbc")
+        #thank_you_page()
 # --------------------------------     Streamlit app - end     --------------------------------
 # ------------------------------------------------------------------------------------------------   New feature testing
 #Testing only
