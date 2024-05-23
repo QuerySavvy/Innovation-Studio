@@ -135,6 +135,7 @@ def thank_you_page():
         with congrats_col2:
             st.image(image)
             st.subheader("You earned 10 points\n\n")
+    return newpoints
 
     #Need to add function to write the points to the user account
 
@@ -221,6 +222,11 @@ def send_sheets_data(data, Address, Latitude, Longitude, type_of_rubbish, user_I
     next_row = len(data.col_values(1)) + 1
     # Insert data into the first blank row without headers
     data.insert_row(data_df.values[0].tolist(), next_row)
+
+def update_user_points(user_row, new_points, user_table):
+    # Update the user_points column for the specific user
+    user_table.update_cell(user_row, 4, new_points)  # Assuming user_points is in the fourth column
+    st.success("User points updated")
 
 
 # ----------------------------------------------------------------     Streamlit app     ----------------------------------------------------------------
@@ -374,10 +380,13 @@ if session_state['form'] == 'submitted':
         please_sign_up()
 
     else:
-        thank_you_page()
+        newpoints = thank_you_page()
         data, users = initialise_sheets()
-        send_sheets_data(data, session_state['address'], session_state['latitude'], session_state['longitude'], session_state['object'], "tbc")
-        #thank_you_page()
+        with st.spinner("Updating user points. . . ."):
+            send_sheets_data(data, session_state['address'], session_state['latitude'], session_state['longitude'], session_state['object'], "tbc")
+            update_user_points(session_state['user_row_number'], newpoints, users)
+
+
 # --------------------------------     Streamlit app - end     --------------------------------
 # ------------------------------------------------------------------------------------------------   New feature testing
 #Testing only
