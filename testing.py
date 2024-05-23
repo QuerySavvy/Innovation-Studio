@@ -19,6 +19,7 @@ CLIENT = InferenceHTTPClient(
     api_key=st.secrets['api_key']
 )
 
+
 # initialize the googlesheets dictionary
 credentials_dict = {
     "type": "service_account",
@@ -33,6 +34,7 @@ credentials_dict = {
     "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/innovation-studio@innovationstudio.iam.gserviceaccount.com",
     "universe_domain": "googleapis.com"
 }
+
 
 
 #testing title
