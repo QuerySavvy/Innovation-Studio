@@ -194,10 +194,12 @@ def create_user(username, password, users):
         userid = "User"+str(next_row-1)
         users.insert_row([userid,username,password,0],next_row)
         st.success("User Created")
+        time.sleep(0.5)
         session_state['user_login_status'] = "Logged In"
         session_state['user_name'] = username
         session_state['user_row_number'] = next_row
         session_state['user_points'] = 0
+        st.write("✨ Welcome "+username+" ✨")
         time.sleep(1)
         st.rerun()
 
