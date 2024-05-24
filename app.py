@@ -60,7 +60,6 @@ def loadlocationdata():
     suburbs.sort()
     return suburbs
 
-@st.cache_data
 def get_nominatim_coordinates(country, state, city, road, number):
     try:
     # Get location info using geopy
@@ -79,7 +78,7 @@ def get_nominatim_coordinates(country, state, city, road, number):
             address = geo_location.address
             if "house_number" not in geo_location.raw['address']:
                 address = selected_number + ", " + address
-                st.info('Unable to find exact location on our server, however our address details have been saved.', icon="⚠️")
+                st.info('Unable to find exact location on our server, however your address details have been saved.', icon="⚠️")
             st.write("Full Address:", address)
 
         return nominatim_lat, nominatim_long, nominatim_coordinates
@@ -97,7 +96,6 @@ def generate_map(lat,long):
 
 
 # Geolocation function
-@st.cache_data
 def locate_me():
     latitude = loc['coords']['latitude']
     longitude = loc['coords']['longitude']
@@ -126,16 +124,55 @@ def thank_you_page():
     url = 'https://github.com/QuerySavvy/Innovation-Studio/blob/main/pngtree-goldan-3d-star-emoji-icon-png-image_10459560.png?raw=true'
     response = requests.get(url)
     image = Image.open(BytesIO(response.content))
+    newpoints = session_state["user_points"] + 10
     with st.container(border=True):
-        congrats_col1, congrats_col2, congrats_col3 = st.columns([2,6,2])
-        with congrats_col2:
-            st.header("Congrations !")
-            st.image(image)
-            st.subheader("You earned 10 points")
+        st.header("Congrations " + session_state['user_name'] + "!")
+        st.subheader("You now have a total of "+ str(newpoints)+" points")
 
+        congrats_col1, congrats_col2, congrats_col3 = st.columns([3,4,3])
+        with congrats_col2:
+            st.image(image)
+            st.subheader("You earned 10 points\n\n")
+    return newpoints
+
+    #Need to add function to write the points to the user account
+
+def please_sign_up():
+    with st.container(border=True):
+        st.header("Don't forget to sign up next time")
+        st.subheader("Earn points and redeem for vouchers 🤑 ")
+
+def login(username, password, worksheet):
+    with st.spinner('Authenticating . . . .'):
+        # Filter data for the given username
+        records = worksheet.get_all_records()
+        user_data = None
+        row_number = None
+
+        for index, record in enumerate(records):
+            if record['user_name'] == username:
+                user_data = record
+                row_number = index + 2  # +2 to account for header row and zero-based index
+                break
+
+        if user_data:
+            if user_data['user_password'] == password:
+                session_state['user_login_status'] = "Logged In"
+                session_state['user_name'] = username
+                session_state['user_row_number'] = row_number
+                session_state['user_points'] = user_data['user_points']
+                st.success("Authenticated")
+                st.write("✨ Welcome "+username+" ✨")
+                st.write("You currently have "+ str(user_data['user_points']) +" points.")
+                time.sleep(5)
+                st.rerun()
+            else:
+                st.warning("Incorrect password")
+        else:
+            st.warning("Username not found")
 
 def initialise_sheets():
-    with st.spinner('loading . . . .'):
+    with st.spinner('Connecting to database . . . .'):
         # Create credentials using the dictionary
         credentials = Credentials.from_service_account_info(
             credentials_dict,
@@ -147,13 +184,28 @@ def initialise_sheets():
         workbook = client.open("Sydney_log")
         data = workbook.get_worksheet(0)  # First sheet
         users = workbook.get_worksheet(1)  # Second sheet
-    # Find the first blank row in the sheet
-    data_next_row = len(data.col_values(1)) + 1
-    users_next_row = len(users.col_values(1)) + 1
-    return data, users, data_next_row, users_next_row
+        # Find the first blank row in the sheet
+    return data, users
 
+def create_user(username, password, users):
+    if username not in users.col_values(2):
+        next_row = len(users.col_values(1)) + 1
+        userid = "User"+str(next_row-1)
+        users.insert_row([userid,username,password,0],next_row)
+        st.success("User Created")
+        time.sleep(0.5)
+        session_state['user_login_status'] = "Logged In"
+        session_state['user_name'] = username
+        session_state['user_row_number'] = next_row
+        session_state['user_points'] = 0
+        st.write("✨ Welcome "+username+" ✨")
+        time.sleep(1)
+        st.rerun()
 
-def send_sheets_data(data, data_next_row, Address, Latitude, Longitude, type_of_rubbish, user_IP, image_location):
+    else:
+        st.warning("username already exists")
+
+def send_sheets_data(data, Address, Latitude, Longitude, type_of_rubbish, user_IP):
     #create the data frame
     data_df = pd.DataFrame({
     'Column1': [Address],
@@ -168,13 +220,58 @@ def send_sheets_data(data, data_next_row, Address, Latitude, Longitude, type_of_
     next_row = len(data.col_values(1)) + 1
     # Insert data into the first blank row without headers
     data.insert_row(data_df.values[0].tolist(), next_row)
+
+def update_user_points(user_row, new_points, user_table):
+    # Update the user_points column for the specific user
+    user_table.update_cell(user_row, 4, new_points)  # Assuming user_points is in the fourth column
+    st.success("User points updated")
+
+
 # ----------------------------------------------------------------     Streamlit app     ----------------------------------------------------------------
 st.title("Curbside rubbish reporting app")
 # Define a SessionState object
 session_state = st.session_state
+
+
+#login screen
+if 'user_login_status' not in session_state:
+    with st.container(border=True):
+        #Login Screen
+        st.subheader("Welcome to our Curbside rubbish reporting app")
+        st.write("How would you like to continue:")
+        screen1_1, screen1_2, screen1_3 = st.columns(3)
+        with screen1_1:
+            with st.popover("Sign In"):
+                username = st.text_input("Enter your username")
+                password = st.text_input("Enter your password")
+                login_button = st.button("Sign In")
+                if login_button:
+                    data, users = initialise_sheets()
+                    login(username,password,users)
+        with screen1_2:
+            with st.popover("Create Account"):
+                username = st.text_input("Enter a username")
+                password = st.text_input("Enter a password")
+                sign_up_button = st.button("Create Account")
+                if(sign_up_button):
+                    data, users = initialise_sheets()
+                    create_user(username, password, users)
+        with screen1_3:
+            guest = st.button("Continue as guest")
+
+        if guest:
+            if "user_login_status" not in session_state:
+                session_state['user_login_status'] = "guest"
+                st.rerun()
+            elif session_state['user_login_status'] != "guest":
+                session_state['user_login_status'] = "guest"
+                st.rerun()           
+    st.stop()
+
+
 # Initialise the session state variables before the user uploads an image
 if 'image uploaded' not in session_state:
-    session_state['image uploaded'] = None
+    session_state['image uploaded'] = None 
     session_state['classification'] = None
     session_state['object'] = None
     session_state['address'] = None
@@ -183,11 +280,12 @@ if 'image uploaded' not in session_state:
 #Run the geolocation engine
 loc = None
 loc = get_geolocation()
+time.sleep(0.5)
 
 #Create the container for the image section 
 with st.container(border=True):
     #Photo subheader
-    st.subheader("Please take a photo or or upload an image to start")
+    st.subheader("Please take a photo or or upload an image")
     # Allow user to upload an image type=["jpg", "jpeg"]
     uploaded_image = st.file_uploader("Choose an image...", type=["jpg", "jpeg"])
     if uploaded_image is not None:
@@ -274,10 +372,16 @@ if session_state['form'] == 'ready':
             st.text("Thank you for your submission")
 if session_state['form'] == 'submitted':
     st.balloons()
-    with st.spinner('Loading. . . .'):
-        data, users, data_next_row, users_next_row = initialise_sheets()
-        send_sheets_data(data, data_next_row, session_state['address'], session_state['latitude'], session_state['longitude'], session_state['object'], "tbc", "tbc")
-    thank_you_page()
+    if session_state['user_login_status'] == "guest":
+        please_sign_up()
+
+    else:
+        newpoints = thank_you_page()
+        data, users = initialise_sheets()
+        with st.spinner("Updating user points. . . ."):
+            send_sheets_data(data, session_state['address'], session_state['latitude'], session_state['longitude'], session_state['object'], "tbc")
+            update_user_points(session_state['user_row_number'], newpoints, users)
+
 
 with st.container(border=True):
     st.write("App Health Checks")
