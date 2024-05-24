@@ -382,17 +382,17 @@ if session_state['form'] == 'submitted':
             send_sheets_data(data, session_state['address'], session_state['latitude'], session_state['longitude'], session_state['object'], "tbc")
             update_user_points(session_state['user_row_number'], newpoints, users)
 
-
-with st.container(border=True):
-    st.write("App Health Checks")
-    try:
-        if loc is not None:
-            latitude = loc['coords']['latitude']
-            longitude = loc['coords']['longitude']
-            coordinates = (latitude, longitude)
-            geolocator = Nominatim(user_agent="UTS_APP")
-            location = geolocator.reverse(coordinates)
-            address_raw = location.raw['address']
-        st.success('Geolocation OK')
-    except:
-        st.error('Geolocation NOT OK')
+with st.sidebar:
+    with st.container(border=True):
+        st.write("App Health Checks")
+        try:
+            if loc is not None:
+                latitude = loc['coords']['latitude']
+                longitude = loc['coords']['longitude']
+                coordinates = (latitude, longitude)
+                geolocator = Nominatim(user_agent="UTS_APP")
+                location = geolocator.reverse(coordinates)
+                address_raw = location.raw['address']
+            st.success('Geolocation OK')
+        except:
+            st.error('Geolocation NOT OK')
