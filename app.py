@@ -393,6 +393,8 @@ with st.sidebar:
                 geolocator = Nominatim(user_agent="UTS_APP")
                 location = geolocator.reverse(coordinates)
                 address_raw = location.raw['address']
-            st.success('Geolocation OK')
+                st.success('Geolocation OK')
+            else:
+                st.error('Geolocation NOT OK')
         except:
             st.error('Geolocation NOT OK')
