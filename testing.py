@@ -69,7 +69,7 @@ def get_nominatim_coordinates(country, state, city, road, number):
     session_state['latitude'] = None
     session_state['longitude'] = None    
     try:
-        geolocator = Nominatim(user_agent="your_app_name")
+        geolocator = Nominatim(user_agent="UTS_APP")
         if 'locate_me' not in session_state:
             state = "NSW"
             country = "Australia"
