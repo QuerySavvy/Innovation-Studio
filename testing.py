@@ -19,7 +19,6 @@ CLIENT = InferenceHTTPClient(
     api_key=st.secrets['api_key']
 )
 
-
 # initialize the googlesheets dictionary
 credentials_dict = {
     "type": "service_account",
