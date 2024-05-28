@@ -57,8 +57,6 @@ def loadlocationdata():
     return suburbs
 
 def get_nominatim_coordinates(country, state, city, road, number):
-    session_state['latitude'] = None
-    session_state['longitude'] = None    
     try:
     # Get location info using geopy
         geolocator = Nominatim(user_agent="UTS_APP")
@@ -289,6 +287,8 @@ if 'image uploaded' not in session_state:
     session_state['form'] = None
     session_state['locate_me'] = None
     session_state['reset_page'] = None
+    session_state['latitude'] = None
+    session_state['longitude'] = None    
 
 #Run the geolocation engine
 loc = None
