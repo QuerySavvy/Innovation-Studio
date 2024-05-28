@@ -135,7 +135,7 @@ def thank_you_page():
 def please_sign_up():
     with st.container(border=True):
         st.header("Don't forget to sign up next time")
-        st.subheader("Earn points and redeem for vouchers 🤑 ")
+        st.subheader("Collect points and claim local dicount vouchers 🤑 ")
 def login(username, password, worksheet):
     with st.spinner('Authenticating . . . .'):
         # Filter data for the given username
