@@ -248,7 +248,7 @@ def reload_page():
 url = 'https://github.com/QuerySavvy/Innovation-Studio/blob/main/bird_of_pred.jpg?raw=true'
 response = requests.get(url)
 image = Image.open(BytesIO(response.content))
-st.image(image,width=200)
+st.image(image)
 
 st.title("Curbside rubbish reporting app")
 # Define a SessionState object
