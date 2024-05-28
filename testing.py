@@ -63,32 +63,41 @@ def loadlocationdata():
     suburbs.sort()
     return suburbs
 
+from geopy.exc import GeocoderTimedOut, GeocoderServiceError
+
 def get_nominatim_coordinates(country, state, city, road, number):
     session_state['latitude'] = None
     session_state['longitude'] = None    
     try:
-    # Get location info using geopy
-        geolocator = Nominatim(user_agent="UTS_APP")
-        #check to see if locate_me function is being used
+        geolocator = Nominatim(user_agent="your_app_name")
         if 'locate_me' not in session_state:
             state = "NSW"
             country = "Australia"
         if selected_number:
-            geo_location = geolocator.geocode(selected_number +" "+selected_street +" "+ selected_suburb+", "+ state +", "+country,addressdetails=True)
-            nominatim_coordinates = (geo_location.latitude, geo_location.longitude)
-            nominatim_lat = geo_location.latitude
-            nominatim_long = geo_location.longitude
-            session_state['latitude'] = geo_location.latitude
-            session_state['longitude'] = geo_location.longitude
-            address = geo_location.address
-            if "house_number" not in geo_location.raw['address']:
-                address = selected_number + ", " + address
-                st.info('Unable to find exact location on our server, however your address details have been saved.', icon="⚠️")
-            st.write("Full Address:", address)
-
-        return nominatim_lat, nominatim_long, nominatim_coordinates
+            for _ in range(3):  # Retry logic
+                try:
+                    geo_location = geolocator.geocode(f"{selected_number} {selected_street} {selected_suburb}, {state}, {country}", addressdetails=True)
+                    if geo_location:
+                        break
+                    time.sleep(1)  # Add delay between retries
+                except GeocoderTimedOut:
+                    continue
+            else:
+                raise GeocoderServiceError("Failed to reach Nominatim service")
+            
+            if geo_location:
+                nominatim_coordinates = (geo_location.latitude, geo_location.longitude)
+                session_state['latitude'] = geo_location.latitude
+                session_state['longitude'] = geo_location.longitude
+                address = geo_location.address
+                if "house_number" not in geo_location.raw['address']:
+                    address = f"{selected_number}, {address}"
+                    st.info('Unable to find exact location on our server, however your address details have been saved.', icon="⚠️")
+                st.write("Full Address:", address)
+                return geo_location.latitude, geo_location.longitude, nominatim_coordinates
     except Exception as e:
-        st.error(f"error with the generate_coordinates function \n\nError Message: {e}")     
+        st.error(f"Error with the generate_coordinates function \n\nError Message: {e}")
+
 
 def generate_map(lat,long):
     try:
