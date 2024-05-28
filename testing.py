@@ -244,6 +244,11 @@ def reload_page():
     streamlit_js_eval(js_expressions="parent.window.location.reload()")
 
 # ----------------------------------------------------------------     Streamlit app     ----------------------------------------------------------------
+
+url = 'https://github.com/QuerySavvy/Innovation-Studio/blob/main/bird_of_pred.jpg?raw=true'
+response = requests.get(url)
+image = Image.open(BytesIO(response.content))
+
 st.title("Curbside rubbish reporting app")
 # Define a SessionState object
 session_state = st.session_state
