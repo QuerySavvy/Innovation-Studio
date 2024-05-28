@@ -209,14 +209,14 @@ def create_user(username, password, users):
     else:
         st.warning("username already exists")
 
-def send_sheets_data(data, Address, Latitude, Longitude, type_of_rubbish, user_IP):
+def send_sheets_data(data, Address, Latitude, Longitude, type_of_rubbish, user_name):
     #create the data frame
     data_df = pd.DataFrame({
     'Column1': [Address],
     'Column2': [Latitude],
     'Column3': [Longitude],
     'Column4': [type_of_rubbish],
-    'Column5': [user_IP],
+    'Column5': [user_name],
     'Column6': [str(date.today())],
     'Column7': ['Null']
     })
@@ -228,6 +228,7 @@ def send_sheets_data(data, Address, Latitude, Longitude, type_of_rubbish, user_I
 def update_user_points(user_row, new_points, user_table):
     # Update the user_points column for the specific user
     user_table.update_cell(user_row, 4, new_points)  # Assuming user_points is in the fourth column
+    session_state['user_points'] = new_points
     st.success("User points updated")
 
 
@@ -266,9 +267,11 @@ if 'user_login_status' not in session_state:
         if guest:
             if "user_login_status" not in session_state:
                 session_state['user_login_status'] = "guest"
+                session_state['user_name'] = "Anonymous"
                 st.rerun()
             elif session_state['user_login_status'] != "guest":
                 session_state['user_login_status'] = "guest"
+                session_state['user_name'] = "Anonymous"
                 st.rerun()           
     st.stop()
 
@@ -286,8 +289,6 @@ loc = None
 loc = get_geolocation()
 time.sleep(0.5)
 
-with st.expander('Click to find out more'):
-        st.write("bla bla bla bla. do we wanna add some bla bla here?")
 #Create the container for the image section 
 with st.container(border=True):
     #Photo subheader
@@ -310,7 +311,8 @@ with st.container(border=True):
     if 'detected_object' in session_state:
         string = f"Image matched with {session_state['confidence']} confidence."
         st.info(string, icon="ℹ️")
-        st.write("The photo submitted looks like a ", session_state['detected_object'], " is that right?")
+        st.markdown(f"The photo submitted looks like a ***{session_state['detected_object']}***, is that right?")
+
         col_1, col_2 = st.columns([.1,1])
         button_yes = col_1.button("Yes")
         button_no = col_2.button("No")
@@ -335,7 +337,7 @@ with st.container(border=True):
 # Load location data
 suburbs = loadlocationdata()
 # Create container for location section
-if not session_state['object'] == None:
+if not session_state['object'] == None and session_state['form'] not in ['submitted','submitting']:
     with st.container(border=True):
         st.subheader("Please enter the rubbish location ")
         if st.button(":round_pushpin: Locate Me "):
@@ -364,7 +366,8 @@ if not session_state['object'] == None:
                 st.warning('get_nominatim_coordinates() and generate_map() currently unavailable', icon="⚠️")
 
             session_state['address'] = selected_number + ', ' + selected_street + ', ' + selected_suburb
-            session_state['form'] = 'ready'
+            if not session_state['form'] == 'submitted':
+                session_state['form'] = 'ready'
 # the form to submit the information
 if session_state['form'] == 'ready':
     with st.container(border=True):
@@ -374,20 +377,25 @@ if session_state['form'] == 'ready':
                     "Address: " + session_state['address'] + "\n"
                     "Report Date: " + str(date.today()))
         if st.button('Submit to '+selected_suburb + ' council 📨'):
-            session_state['form'] = 'submitted'
+            session_state['form'] = 'submitting'
             st.text("Thank you for your submission")
-if session_state['form'] == 'submitted':
+
+if session_state['form'] == 'submitting':
     st.balloons()
     if session_state['user_login_status'] == "guest":
-        please_sign_up()
+        with st.spinner("Loading . . . ."):
+            data, users = initialise_sheets()
+            send_sheets_data(data, session_state['address'], session_state['latitude'], session_state['longitude'], session_state['object'], session_state['user_name'])
+            please_sign_up()
+            session_state['form'] = 'submitted'
 
     else:
         newpoints = thank_you_page()
         data, users = initialise_sheets()
         with st.spinner("Updating user points. . . ."):
-            send_sheets_data(data, session_state['address'], session_state['latitude'], session_state['longitude'], session_state['object'], "tbc")
+            send_sheets_data(data, session_state['address'], session_state['latitude'], session_state['longitude'], session_state['object'], session_state['user_name'])
             update_user_points(session_state['user_row_number'], newpoints, users)
-
+            session_state['form'] = 'submitted'
 
 # --------------------------------     Streamlit app - end     --------------------------------
 # ------------------------------------------------------------------------------------------------   New feature testing
