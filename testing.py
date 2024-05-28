@@ -12,13 +12,11 @@ from io import BytesIO
 import gspread
 from google.oauth2.service_account import Credentials
 import time
-
 # initialize the roboflow client
 CLIENT = InferenceHTTPClient(
     api_url="https://detect.roboflow.com",
     api_key=st.secrets['api_key']
 )
-
 # initialize the googlesheets dictionary
 credentials_dict = {
     "type": "service_account",
@@ -33,14 +31,9 @@ credentials_dict = {
     "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/innovation-studio@innovationstudio.iam.gserviceaccount.com",
     "universe_domain": "googleapis.com"
 }
-
-
-
 #testing title
 st.title("*** ***TESTING PAGE*** ***")
-
 # --------------------------------     Copy/Paste code below this line     --------------------------------
-
 # Function to perform inference on uploaded image
 def rubbish_detector(image_file):
     with st.spinner('Please wait for image classification . . . .'):
@@ -63,42 +56,31 @@ def loadlocationdata():
     suburbs.sort()
     return suburbs
 
-from geopy.exc import GeocoderTimedOut, GeocoderServiceError
-
 def get_nominatim_coordinates(country, state, city, road, number):
     session_state['latitude'] = None
     session_state['longitude'] = None    
     try:
+    # Get location info using geopy
         geolocator = Nominatim(user_agent="UTS_APP")
+        #check to see if locate_me function is being used
         if 'locate_me' not in session_state:
             state = "NSW"
             country = "Australia"
         if selected_number:
-            for _ in range(3):  # Retry logic
-                try:
-                    geo_location = geolocator.geocode(f"{selected_number} {selected_street} {selected_suburb}, {state}, {country}", addressdetails=True)
-                    if geo_location:
-                        break
-                    time.sleep(1)  # Add delay between retries
-                except GeocoderTimedOut:
-                    continue
-            else:
-                raise GeocoderServiceError("Failed to reach Nominatim service")
-            
-            if geo_location:
-                nominatim_coordinates = (geo_location.latitude, geo_location.longitude)
-                session_state['latitude'] = geo_location.latitude
-                session_state['longitude'] = geo_location.longitude
-                address = geo_location.address
-                if "house_number" not in geo_location.raw['address']:
-                    address = f"{selected_number}, {address}"
-                    st.info('Unable to find exact location on our server, however your address details have been saved.', icon="⚠️")
-                st.write("Full Address:", address)
-                return geo_location.latitude, geo_location.longitude, nominatim_coordinates
+            geo_location = geolocator.geocode(selected_number +" "+selected_street +" "+ selected_suburb+", "+ state +", "+country,addressdetails=True)
+            nominatim_coordinates = (geo_location.latitude, geo_location.longitude)
+            nominatim_lat = geo_location.latitude
+            nominatim_long = geo_location.longitude
+            session_state['latitude'] = geo_location.latitude
+            session_state['longitude'] = geo_location.longitude
+            address = geo_location.address
+            if "house_number" not in geo_location.raw['address']:
+                address = selected_number + ", " + address
+                st.info('Unable to find exact location on our server, however your address details have been saved.', icon="⚠️")
+            st.write("Full Address:", address)
+        return nominatim_lat, nominatim_long, nominatim_coordinates
     except Exception as e:
-        st.error(f"Error with the generate_coordinates function \n\nError Message: {e}")
-
-
+        st.error(f"error with the generate_coordinates function \n\nError Message: {e}")     
 def generate_map(lat,long):
     try:
         map = folium.Map(location=(lat,long), zoom_start=17)
@@ -109,8 +91,6 @@ def generate_map(lat,long):
         session_state['latitude'] = None
         session_state['longitude'] = None
         st.error(f"Map currently unavailable. \n\nError Message: {e}")
-
-
 # Geolocation function
 def locate_me():
     latitude = loc['coords']['latitude']
@@ -135,7 +115,6 @@ def locate_me():
         number = address_raw['house_number']
     
     return country, state, city, road, number
-
 def thank_you_page():
     url = 'https://github.com/QuerySavvy/Innovation-Studio/blob/main/pngtree-goldan-3d-star-emoji-icon-png-image_10459560.png?raw=true'
     response = requests.get(url)
@@ -144,33 +123,27 @@ def thank_you_page():
     with st.container(border=True):
         st.header("Congrations " + session_state['user_name'] + "!")
         st.subheader("You now have a total of "+ str(newpoints)+" points")
-
         congrats_col1, congrats_col2, congrats_col3 = st.columns([3,4,3])
         with congrats_col2:
             st.image(image)
             st.subheader("You earned 10 points\n\n")
     return newpoints
-
     #Need to add function to write the points to the user account
-
 def please_sign_up():
     with st.container(border=True):
         st.header("Don't forget to sign up next time")
         st.subheader("Earn points and redeem for vouchers 🤑 ")
-
 def login(username, password, worksheet):
     with st.spinner('Authenticating . . . .'):
         # Filter data for the given username
         records = worksheet.get_all_records()
         user_data = None
         row_number = None
-
         for index, record in enumerate(records):
             if record['user_name'] == username:
                 user_data = record
                 row_number = index + 2  # +2 to account for header row and zero-based index
                 break
-
         if user_data:
             if user_data['user_password'] == password:
                 session_state['user_login_status'] = "Logged In"
@@ -186,7 +159,6 @@ def login(username, password, worksheet):
                 st.warning("Incorrect password")
         else:
             st.warning("Username not found")
-
 def initialise_sheets():
     with st.spinner('Connecting to database . . . .'):
         # Create credentials using the dictionary
@@ -202,7 +174,6 @@ def initialise_sheets():
         users = workbook.get_worksheet(1)  # Second sheet
         # Find the first blank row in the sheet
     return data, users
-
 def create_user(username, password, users):
     if username not in users.col_values(2):
         next_row = len(users.col_values(1)) + 1
@@ -217,10 +188,8 @@ def create_user(username, password, users):
         st.write("✨ Welcome "+username+" ✨")
         time.sleep(1)
         st.rerun()
-
     else:
         st.warning("username already exists")
-
 def send_sheets_data(data, Address, Latitude, Longitude, type_of_rubbish, user_name):
     #create the data frame
     data_df = pd.DataFrame({
@@ -236,20 +205,15 @@ def send_sheets_data(data, Address, Latitude, Longitude, type_of_rubbish, user_n
     next_row = len(data.col_values(1)) + 1
     # Insert data into the first blank row without headers
     data.insert_row(data_df.values[0].tolist(), next_row)
-
 def update_user_points(user_row, new_points, user_table):
     # Update the user_points column for the specific user
     user_table.update_cell(user_row, 4, new_points)  # Assuming user_points is in the fourth column
     session_state['user_points'] = new_points
     st.success("User points updated")
-
-
 # ----------------------------------------------------------------     Streamlit app     ----------------------------------------------------------------
 st.title("Curbside rubbish reporting app")
 # Define a SessionState object
 session_state = st.session_state
-
-
 #login screen
 if 'user_login_status' not in session_state:
     with st.container(border=True):
@@ -275,7 +239,6 @@ if 'user_login_status' not in session_state:
                     create_user(username, password, users)
         with screen1_3:
             guest = st.button("Continue as guest")
-
         if guest:
             if "user_login_status" not in session_state:
                 session_state['user_login_status'] = "guest"
@@ -286,8 +249,6 @@ if 'user_login_status' not in session_state:
                 session_state['user_name'] = "Anonymous"
                 st.rerun()           
     st.stop()
-
-
 # Initialise the session state variables before the user uploads an image
 if 'image uploaded' not in session_state:
     session_state['image uploaded'] = None 
@@ -300,7 +261,6 @@ if 'image uploaded' not in session_state:
 loc = None
 loc = get_geolocation()
 time.sleep(0.5)
-
 #Create the container for the image section 
 with st.container(border=True):
     #Photo subheader
@@ -324,7 +284,6 @@ with st.container(border=True):
         string = f"Image matched with {session_state['confidence']} confidence."
         st.info(string, icon="ℹ️")
         st.markdown(f"The photo submitted looks like a ***{session_state['detected_object']}***, is that right?")
-
         col_1, col_2 = st.columns([.1,1])
         button_yes = col_1.button("Yes")
         button_no = col_2.button("No")
@@ -376,7 +335,6 @@ if not session_state['object'] == None and session_state['form'] not in ['submit
                 generate_map(nominatim_lat,nominatim_long)
             except:
                 st.warning('get_nominatim_coordinates() and generate_map() currently unavailable', icon="⚠️")
-
             session_state['address'] = selected_number + ', ' + selected_street + ', ' + selected_suburb
             if not session_state['form'] == 'submitted':
                 session_state['form'] = 'ready'
@@ -391,7 +349,6 @@ if session_state['form'] == 'ready':
         if st.button('Submit to '+selected_suburb + ' council 📨'):
             session_state['form'] = 'submitting'
             st.text("Thank you for your submission")
-
 if session_state['form'] == 'submitting':
     st.balloons()
     if session_state['user_login_status'] == "guest":
@@ -400,7 +357,6 @@ if session_state['form'] == 'submitting':
             send_sheets_data(data, session_state['address'], session_state['latitude'], session_state['longitude'], session_state['object'], session_state['user_name'])
             please_sign_up()
             session_state['form'] = 'submitted'
-
     else:
         newpoints = thank_you_page()
         data, users = initialise_sheets()
@@ -408,7 +364,6 @@ if session_state['form'] == 'submitting':
             send_sheets_data(data, session_state['address'], session_state['latitude'], session_state['longitude'], session_state['object'], session_state['user_name'])
             update_user_points(session_state['user_row_number'], newpoints, users)
             session_state['form'] = 'submitted'
-
 # --------------------------------     Streamlit app - end     --------------------------------
 # ------------------------------------------------------------------------------------------------   New feature testing
 #Testing only
