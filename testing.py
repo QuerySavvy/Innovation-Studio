@@ -380,9 +380,9 @@ if session_state['form'] == 'ready':
                     "Address: " + session_state['address'] + "\n"
                     "Report Date: " + str(date.today()))
         if st.button('Submit to '+selected_suburb + ' council 📨'):
-
+            session_state['form'] = 'submitted'
             st.text("Thank you for your submission")
-
+if session_state['form'] == 'submitted':
     st.balloons()
     if session_state['user_login_status'] == "guest":
         with st.spinner("Loading . . . ."):
