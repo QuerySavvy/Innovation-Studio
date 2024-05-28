@@ -240,7 +240,8 @@ def display_my_rewards(points):
             st.subheader("Your next reward is:")
             st.write(f"{pts} pts = {reward}")
             break
-
+def reload_page():
+    streamlit_js_eval(js_expressions="parent.window.location.reload()")
 
 # ----------------------------------------------------------------     Streamlit app     ----------------------------------------------------------------
 st.title("Curbside rubbish reporting app")
@@ -400,10 +401,8 @@ if session_state['form'] == 'submitted':
             update_user_points(session_state['user_row_number'], newpoints, users)
             session_state['form'] = 'submitted'
 
-    if st.button("Submit another request"):
-        session_state['reset_page'] = True
-    if session_state['reset_page'] == True:
-        streamlit_js_eval(js_expressions="parent.window.location.reload()")
+    st.button("Submit another request", on_click=reload_page)
+    
 # --------------------------------     Streamlit app - end     --------------------------------
 # ------------------------------------------------------------------------------------------------   New feature testing
 #Testing only
