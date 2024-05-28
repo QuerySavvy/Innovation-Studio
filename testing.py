@@ -228,10 +228,11 @@ def display_my_rewards(points):
     eligible_reward_found = False
 
     for pts, reward in rewards_scale.items():
-        if points >= pts and not eligible_reward_found:
-            st.subheader("🎉 You are eligible for:")
+        if points >= pts:
+            if not eligible_reward_found:
+                st.subheader("🎉 You are eligible for:")
+                eligible_reward_found = True
             st.write(f"{pts} pts = {reward}")
-            eligible_reward_found = True
 
         elif points < pts:
             st.subheader("Your next reward is:")
