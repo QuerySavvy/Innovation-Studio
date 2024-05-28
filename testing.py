@@ -96,6 +96,8 @@ def generate_map(lat,long):
         # Display map
         return st_folium(map, height=300)
     except Exception as e:
+        session_state['latitude'] = None
+        session_state['longitude'] = None
         st.error(f"Map currently unavailable. \n\nError Message: {e}")
 
 
