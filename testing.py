@@ -5,7 +5,7 @@ import pandas as pd
 import folium
 from geopy.geocoders import Nominatim
 from streamlit_folium import st_folium
-from streamlit_js_eval import get_geolocation
+from streamlit_js_eval import get_geolocation, streamlit_js_eval
 from datetime import date
 import requests
 from io import BytesIO
@@ -119,14 +119,17 @@ def thank_you_page():
     url = 'https://github.com/QuerySavvy/Innovation-Studio/blob/main/pngtree-goldan-3d-star-emoji-icon-png-image_10459560.png?raw=true'
     response = requests.get(url)
     image = Image.open(BytesIO(response.content))
-    newpoints = session_state["user_points"] + 10
+    newpoints = session_state['user_points'] + 10
     with st.container(border=True):
         st.header("Congrations " + session_state['user_name'] + "!")
         st.subheader("You now have a total of "+ str(newpoints)+" points")
+        with st.popover("See rewards"):
+            display_my_rewards(newpoints)
         congrats_col1, congrats_col2, congrats_col3 = st.columns([3,4,3])
         with congrats_col2:
             st.image(image)
             st.subheader("You earned 10 points\n\n")
+    
     return newpoints
     #Need to add function to write the points to the user account
 def please_sign_up():
@@ -210,6 +213,34 @@ def update_user_points(user_row, new_points, user_table):
     user_table.update_cell(user_row, 4, new_points)  # Assuming user_points is in the fourth column
     session_state['user_points'] = new_points
     st.success("User points updated")
+
+def display_my_rewards(points):
+    rewards_scale = {
+    50: "$10 voucher for your local pub",
+    100: "50% off movie tickets",
+    200: "$25 restaurant gift card",
+    300: "Free coffee for a week at a local café",
+    500: "$50 shopping voucher",
+    750: "Free monthly gym membership",
+    1000: "$100 travel voucher",
+    1500: "Free entry to a local event or concert",
+    2000: "$200 tech gadget gift card"
+    }
+
+    eligible_reward_found = False
+
+    for pts, reward in rewards_scale.items():
+        if points >= pts and not eligible_reward_found:
+            st.subheader("🎉 You are eligible for:")
+            st.write(f"{pts} pts = {reward}")
+            eligible_reward_found = True
+
+        elif points < pts:
+            st.subheader("Your next reward is:")
+            st.write(f"{pts} pts = {reward}")
+            break
+
+
 # ----------------------------------------------------------------     Streamlit app     ----------------------------------------------------------------
 st.title("Curbside rubbish reporting app")
 # Define a SessionState object
@@ -257,6 +288,8 @@ if 'image uploaded' not in session_state:
     session_state['address'] = None
     session_state['form'] = None
     session_state['locate_me'] = None
+    session_state['reset_page'] = None
+
 #Run the geolocation engine
 loc = None
 loc = get_geolocation()
@@ -308,7 +341,7 @@ with st.container(border=True):
 # Load location data
 suburbs = loadlocationdata()
 # Create container for location section
-if not session_state['object'] == None and session_state['form'] not in ['submitted','submitting']:
+if not session_state['object'] == None:
     with st.container(border=True):
         st.subheader("Please enter the rubbish location ")
         if st.button(":round_pushpin: Locate Me "):
@@ -336,8 +369,7 @@ if not session_state['object'] == None and session_state['form'] not in ['submit
             except:
                 st.warning('get_nominatim_coordinates() and generate_map() currently unavailable', icon="⚠️")
             session_state['address'] = selected_number + ', ' + selected_street + ', ' + selected_suburb
-            if not session_state['form'] == 'submitted':
-                session_state['form'] = 'ready'
+            session_state['form'] = 'ready'
 # the form to submit the information
 if session_state['form'] == 'ready':
     with st.container(border=True):
@@ -347,9 +379,9 @@ if session_state['form'] == 'ready':
                     "Address: " + session_state['address'] + "\n"
                     "Report Date: " + str(date.today()))
         if st.button('Submit to '+selected_suburb + ' council 📨'):
-            session_state['form'] = 'submitting'
+
             st.text("Thank you for your submission")
-if session_state['form'] == 'submitting':
+
     st.balloons()
     if session_state['user_login_status'] == "guest":
         with st.spinner("Loading . . . ."):
@@ -364,6 +396,11 @@ if session_state['form'] == 'submitting':
             send_sheets_data(data, session_state['address'], session_state['latitude'], session_state['longitude'], session_state['object'], session_state['user_name'])
             update_user_points(session_state['user_row_number'], newpoints, users)
             session_state['form'] = 'submitted'
+
+    if st.button("Submit another request"):
+        session_state['reset_page'] = True
+    if session_state['reset_page'] == True:
+        streamlit_js_eval(js_expressions="parent.window.location.reload()")
 # --------------------------------     Streamlit app - end     --------------------------------
 # ------------------------------------------------------------------------------------------------   New feature testing
 #Testing only
