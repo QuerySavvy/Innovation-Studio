@@ -414,7 +414,7 @@ if session_state['form'] == 'submitted':
 #Testing only
 with st.sidebar:
     with st.container(border=True):
-        st.subheader("Backend Code information")
+        st.write("App Health Checks")
         try:
             if loc is not None:
                 latitude = loc['coords']['latitude']
@@ -424,9 +424,14 @@ with st.sidebar:
                 location = geolocator.reverse(coordinates)
                 address_raw = location.raw['address']
                 st.success('Geolocation OK')
-        #used for testing
-            st.write(address_raw)
-        except Exception as e:
-            st.error(f'Geolocation NOT OK {e}')
-        st.info('Session State Information')
+            else:
+                st.error('Geolocation NOT OK')
+        except:
+            st.error('Geolocation NOT OK')
+        try:
+            data, users = initialise_sheets()
+            st.success('Google API OK')
+        except:
+            st.error('Google API NOT OK')
+        st.write('Session State Information')
         session_state
