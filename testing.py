@@ -243,6 +243,7 @@ def display_my_rewards(points):
 def reload_page():
     streamlit_js_eval(js_expressions="parent.window.location.reload()")
 
+
 # ----------------------------------------------------------------     Streamlit app     ----------------------------------------------------------------
 
 url = 'https://github.com/QuerySavvy/Innovation-Studio/blob/main/bird_of_pred.jpg?raw=true'
