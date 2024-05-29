@@ -263,8 +263,8 @@ if 'user_login_status' not in session_state:
         screen1_1, screen1_2, screen1_3 = st.columns(3)
         with screen1_1:
             with st.popover("Sign In"):
-                username = st.text_input("Enter your username",type="password")
-                password = st.text_input("Enter your password")
+                username = st.text_input("Enter your username")
+                password = st.text_input("Enter your password",type="password")
                 login_button = st.button("Sign In")
                 if login_button:
                     data, users = initialise_sheets()
