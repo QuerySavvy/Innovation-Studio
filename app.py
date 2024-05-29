@@ -17,6 +17,7 @@ CLIENT = InferenceHTTPClient(
     api_url="https://detect.roboflow.com",
     api_key=st.secrets['api_key']
 )
+
 # initialize the googlesheets dictionary
 credentials_dict = {
     "type": "service_account",
