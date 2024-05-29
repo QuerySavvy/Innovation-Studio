@@ -423,3 +423,8 @@ with st.sidebar:
                 st.error('Geolocation NOT OK')
         except:
             st.error('Geolocation NOT OK')
+        try:
+            data, users = initialise_sheets()
+            st.success('Google API OK')
+        except:
+            st.error('Google API NOT OK')
