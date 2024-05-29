@@ -427,7 +427,7 @@ with st.sidebar:
                 st.success('Geolocation OK')
             else:
                 st.error('Geolocation NOT OK')
-        except exception as e:
+        except Exception as e:
             st.error(f'Geolocation NOT OK {e}')
         try:
             data, users = initialise_sheets()
