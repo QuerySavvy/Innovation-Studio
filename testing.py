@@ -128,7 +128,7 @@ def thank_you_page():
         congrats_col1, congrats_col2, congrats_col3 = st.columns([3,4,3])
         with congrats_col2:
             st.image(image)
-            st.subheader("You earned 10 points\n\n")
+            st.subheader("You earned 10 points\n\n")   
     
     return newpoints
     #Need to add function to write the points to the user account
@@ -240,6 +240,29 @@ def display_my_rewards(points):
             st.subheader("Your next reward is:")
             st.write(f"{pts} pts = {reward}")
             break
+def display_leader_board(userdata):
+    # Fetch all records from the users worksheet
+    users_data = userdata.get_all_records()
+    
+    users_df = pd.DataFrame(users_data)
+    users_df.drop(columns=["user_id","user_password","user_tbc"],inplace=True)
+
+    users_sorted = users_df.sort_values(by='user_points',ascending=False).head()
+    st.subheader("Leaderboard")
+    st.dataframe(
+        users_sorted,
+        column_config={
+            "user_name": "User Name",
+            "user_points": st.column_config.NumberColumn(
+                "User XP",
+                format="%d ⭐"
+            ),
+        },
+        hide_index=True,use_container_width=True
+    )
+
+    
+    
 def reload_page():
     streamlit_js_eval(js_expressions="parent.window.location.reload()")
 
@@ -252,6 +275,7 @@ image = Image.open(BytesIO(response.content))
 st.image(image)
 
 st.title("Curbside rubbish reporting app")
+
 # Define a SessionState object
 session_state = st.session_state
 #login screen
@@ -401,12 +425,15 @@ if session_state['form'] == 'submitted':
             please_sign_up()
             session_state['form'] = 'submitted'
     else:
-        newpoints = thank_you_page()
         data, users = initialise_sheets()
+        newpoints = thank_you_page()
         with st.spinner("Updating user points. . . ."):
             send_sheets_data(data, session_state['address'], session_state['latitude'], session_state['longitude'], session_state['object'], session_state['user_name'])
             update_user_points(session_state['user_row_number'], newpoints, users)
             session_state['form'] = 'submitted'
+        with st.container(border=True):
+            data, users = initialise_sheets()
+            display_leader_board(users)
 
     st.button("Submit another request", on_click=reload_page)
     
