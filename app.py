@@ -273,7 +273,20 @@ response = requests.get(url)
 image = Image.open(BytesIO(response.content))
 st.image(image)
 
-st.title("Spot & Send")
+# Title with emojis
+title = "📷 Spot & Send 📤"
+
+# Center-aligned title with black text
+st.markdown(f"<h1 style='text-align: center; color: black;'>{title}</h1>", unsafe_allow_html=True)
+
+
+with st.expander("About Spot & Send"):
+    st.write("Welcome to Spot & Send, we're on a mission to reduce illegal rubbish dumping.")
+    st.write("1. 📸 Snap a photo of illegally dumped rubbish.")
+    st.write("2. 🗑️ Confirm the rubbish type.")
+    st.write("3. 📍 Confirm your location.")
+    st.write("4. 📤 Send to earn points.")
+    st.write("Thanks for your help, let's get started!")
 
 # Define a SessionState object
 session_state = st.session_state
