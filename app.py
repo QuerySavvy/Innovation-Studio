@@ -274,7 +274,7 @@ response = requests.get(url)
 image = Image.open(BytesIO(response.content))
 st.image(image)
 
-st.title("Curbside rubbish reporting app")
+st.title("Spot & Send")
 
 # Define a SessionState object
 session_state = st.session_state
