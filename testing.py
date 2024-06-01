@@ -278,7 +278,8 @@ st.image(image)
 # Title with emojis
 title = "📷 Spot & Send 📤"
 
-st.expander("About spot and send","Welcome to Spot and Send, we're on a mission to reduce illegal rubbish dumping. Thanks for your help, let's get started!") 
+with st.expander("About spot and send"):
+    st.write("Welcome to Spot and Send, we're on a mission to reduce illegal rubbish dumping. Thanks for your help, let's get started!") 
 # Center-aligned title with black text
 st.markdown(f"<h1 style='text-align: center; color: black;'>{title}</h1>", unsafe_allow_html=True)
 
