@@ -275,7 +275,11 @@ response = requests.get(url)
 image = Image.open(BytesIO(response.content))
 st.image(image)
 
-st.title("🔍 Spot & Send")
+# Title with emojis
+title = "📷 Spot & Send 🗑️"
+
+# Center-aligned title with black text
+st.markdown(f"<h1 style='text-align: center; color: black;'>{title}</h1>", unsafe_allow_html=True)
 
 # Define a SessionState object
 session_state = st.session_state
