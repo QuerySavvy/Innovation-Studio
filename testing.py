@@ -287,7 +287,7 @@ session_state = st.session_state
 if 'user_login_status' not in session_state:
     with st.container(border=True):
         #Login Screen
-        st.subheader("Welcome to our Curbside rubbish reporting app")
+        st.subheader("Welcome to Spot and Send, we're on a mission to reduce illegal rubbish dumping. Thanks for your help, let's get started!")
         st.write("How would you like to continue:")
         screen1_1, screen1_2, screen1_3 = st.columns(3)
         with screen1_1:
