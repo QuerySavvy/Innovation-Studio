@@ -35,6 +35,7 @@ credentials_dict = {
 
 # --------------------------------     Copy/Paste code below this line     --------------------------------
 
+# --------------------------------     Copy/Paste code below this line     --------------------------------
 # Function to perform inference on uploaded image
 def rubbish_detector(image_file):
     with st.spinner('Please wait for image classification . . . .'):
@@ -127,7 +128,7 @@ def thank_you_page():
         congrats_col1, congrats_col2, congrats_col3 = st.columns([3,4,3])
         with congrats_col2:
             st.image(image)
-            st.subheader("You earned 10 points\n\n")
+            st.subheader("You earned 10 points\n\n")   
     
     return newpoints
     #Need to add function to write the points to the user account
@@ -239,8 +240,32 @@ def display_my_rewards(points):
             st.subheader("Your next reward is:")
             st.write(f"{pts} pts = {reward}")
             break
+def display_leader_board(userdata):
+    # Fetch all records from the users worksheet
+    users_data = userdata.get_all_records()
+    
+    users_df = pd.DataFrame(users_data)
+    users_df.drop(columns=["user_id","user_password","user_tbc"],inplace=True)
+
+    users_sorted = users_df.sort_values(by='user_points',ascending=False).head()
+    st.subheader("Leaderboard")
+    st.dataframe(
+        users_sorted,
+        column_config={
+            "user_name": "User Name",
+            "user_points": st.column_config.NumberColumn(
+                "User XP",
+                format="%d ⭐"
+            ),
+        },
+        hide_index=True,use_container_width=True
+    )
+
+    
+    
 def reload_page():
     streamlit_js_eval(js_expressions="parent.window.location.reload()")
+
 
 # ----------------------------------------------------------------     Streamlit app     ----------------------------------------------------------------
 
@@ -250,6 +275,7 @@ image = Image.open(BytesIO(response.content))
 st.image(image)
 
 st.title("Curbside rubbish reporting app")
+
 # Define a SessionState object
 session_state = st.session_state
 #login screen
@@ -262,7 +288,7 @@ if 'user_login_status' not in session_state:
         with screen1_1:
             with st.popover("Sign In"):
                 username = st.text_input("Enter your username")
-                password = st.text_input("Enter your password")
+                password = st.text_input("Enter your password",type="password")
                 login_button = st.button("Sign In")
                 if login_button:
                     data, users = initialise_sheets()
@@ -270,7 +296,7 @@ if 'user_login_status' not in session_state:
         with screen1_2:
             with st.popover("Create Account"):
                 username = st.text_input("Enter a username")
-                password = st.text_input("Enter a password")
+                password = st.text_input("Enter a password",type="password")
                 sign_up_button = st.button("Create Account")
                 if(sign_up_button):
                     data, users = initialise_sheets()
@@ -399,15 +425,21 @@ if session_state['form'] == 'submitted':
             please_sign_up()
             session_state['form'] = 'submitted'
     else:
-        newpoints = thank_you_page()
         data, users = initialise_sheets()
+        newpoints = thank_you_page()
         with st.spinner("Updating user points. . . ."):
             send_sheets_data(data, session_state['address'], session_state['latitude'], session_state['longitude'], session_state['object'], session_state['user_name'])
             update_user_points(session_state['user_row_number'], newpoints, users)
             session_state['form'] = 'submitted'
+        with st.container(border=True):
+            data, users = initialise_sheets()
+            display_leader_board(users)
 
     st.button("Submit another request", on_click=reload_page)
-
+    
+# --------------------------------     Streamlit app - end     --------------------------------
+# ------------------------------------------------------------------------------------------------   New feature testing
+#Testing only
 with st.sidebar:
     with st.container(border=True):
         st.write("App Health Checks")
@@ -422,8 +454,8 @@ with st.sidebar:
                 st.success('Geolocation OK')
             else:
                 st.error('Geolocation NOT OK')
-        except:
-            st.error('Geolocation NOT OK')
+        except Exception as e:
+            st.error(f'Geolocation NOT OK {e}')
         try:
             data, users = initialise_sheets()
             st.success('Google API OK')
