@@ -283,7 +283,12 @@ st.markdown(f"<h1 style='text-align: center; color: black;'>{title}</h1>", unsaf
 
 
 with st.expander("About Spot & Send"):
-    st.write("Welcome to Spot & Send, we're on a mission to reduce illegal rubbish dumping. Thanks for your help, let's get started!") 
+    st.write("""Welcome to Spot & Send, we're on a mission to reduce illegal rubbish dumping. 
+    1. Snap a photo of illegally dumped rubbish.
+    2. Confirm the rubbish type.
+    3. Confirm your location.
+    4. Send to earn points.
+    Thanks for your help, let's get started!""") 
 
 # Define a SessionState object
 session_state = st.session_state
